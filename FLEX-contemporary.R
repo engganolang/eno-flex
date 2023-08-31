@@ -1,5 +1,7 @@
 library(tidyverse)
 library(xml2)
+library(googledrive)
+library(googlesheets4)
 
 
 flexdb <- read_xml("FLEX-contemporary.xml")
@@ -71,7 +73,7 @@ entry_attr_df <- entry_attr |>
   list_rbind() |> 
   rename(entry_id = guid)
 
-## gather the lexical unit trait =====
+## gather the lexical unit TRAIT =====
 lu_trait <- myentry %>% 
   map(~xml_find_first(., "trait[@name='morph-type']")) %>% 
   map(~xml_attr(., "value"))
@@ -210,6 +212,7 @@ senses_gloss_lang_df <- list_rbind(senses_gloss_lang_df) |>
   mutate(sense_form_n = length(sense_form)) |> 
   ungroup()
 nrow(senses_gloss_lang_df)
+# [1] 2900
 sort(unique(senses_gloss_lang_df$sense_form_n))
 # [1] 1 2 3 4 5 6
 
@@ -465,7 +468,18 @@ etym_text <- etym |>
 ### element 187 has two elements
 names(etym_text) <- myentry_id_num
 
+### create a tibble for the text element under gloss =====
+etym_df <- map2(.x = names(etym_text), 
+                .y = etym_text, 
+                ~tibble(entry_id = .x, etyms = .y)) |> 
+  list_rbind()
 
+
+### join the senses, lu, and etym into one tibble =====
+senses_gloss_lang_df6 <- senses_gloss_lang_df5 |> 
+  left_join(etym_df, 
+            by = join_by(entry_id), 
+            relationship = "many-to-many")
 
 
 
@@ -480,6 +494,25 @@ names(etym_text) <- myentry_id_num
 
 # VARIANT: extract <variant> using purrr::map() for each <entry> ======
 
+
+variant <- myentry |> 
+  map(~xml_find_all(., "variant"))
+
+variant |> 
+  map(~xml_attrs(.)) |> 
+  map(unlist) |> 
+  unlist() |> 
+  unique()
+# character(0)
+
+### check the children of the VARIANT =====
+variant |> 
+  map(~xml_children(.)) |> 
+  map(~xml_name(.)) |> 
+  unlist() |> 
+  unique()
+# [1] "form"  "trait"
+
 ## gather the <variant> forms ====
 variant_form <- myentry %>% 
   # .[test_range] %>% 
@@ -491,7 +524,20 @@ variant_form[lengths(variant_form) == 0] <- NA
 # select(id, everything())
 # map2(.x = ., .y = myentry_id_form, ~mutate(.x, lu = .y)) %>% 
 # map2_df(.x = ., .y = myentry_id_num, ~mutate(.x, id = .y)) # add the numeric id
-names(variant_form) <- paste(myentry_id, "__", sep = "")
+names(variant_form) <- myentry_id_num
+variant_form_df <- map2(.x = names(variant_form), 
+                        .y = variant_form,
+                        ~tibble(entry_id = .x,
+                                variants = .y)) |> 
+  list_rbind()
+variant_form_df1 <- variant_form_df |> 
+  filter(!is.na(variants)) |> 
+  group_by(entry_id) |> 
+  mutate(variants1 = paste(variants, collapse = " ; ")) |> 
+  ungroup() |> 
+  select(entry_id, variants = variants1) |> 
+  distinct()
+
 ## gather the <variant> <trait> values ====
 variant_traits <- myentry %>% 
   # .[test_range] %>%
@@ -499,36 +545,86 @@ variant_traits <- myentry %>%
   map(~xml_find_all(., "trait[@name='morph-type']")) %>% 
   map(~xml_attr(., "value"))
 variant_traits[lengths(variant_traits) == 0] <- NA
-names(variant_traits) <- paste(myentry_id, "__", sep = "")
-## create a tibble of <variant> forms and <trait> ======
-variant_form1 <- unlist(variant_form)
-variant_form1_names <- names(variant_form1)
-variant_form1_names <- str_replace_all(variant_form1_names, "__.*$", "")
-variant_form1_df <- tibble(variant_form = unname(variant_form1), id = variant_form1_names)
+names(variant_traits) <- myentry_id_num
+variant_traits_df <- map2(.x = names(variant_traits),
+                          .y = variant_traits,
+                          ~tibble(entry_id = .x,
+                                  variant_form_traits = .y)) |> 
+  list_rbind()
 
-variant_traits1 <- unlist(variant_traits)
-variant_traits1_names <- names(variant_traits1)
-variant_traits1_names <- str_replace_all(variant_traits1_names, "__.*$", "")
-variant_traits1_df <- tibble(variant_morph_type = unname(variant_traits1), id = variant_traits1_names)
-
-variant_form_and_trait_df <- variant_form1_df |> 
-  filter(!is.na(variant_form)) |> 
-  left_join(variant_traits1_df |> 
-              filter(!is.na(variant_morph_type)), 
-            by = join_by("id"), 
-            relationship = "many-to-many") |> 
+variant_traits_df1 <- variant_traits_df |> 
+  filter(!is.na(variant_form_traits)) |> 
+  group_by(entry_id) |> 
+  mutate(variant_form_traits = paste(variant_form_traits, collapse = " ; ")) |> 
+  ungroup() |> 
+  select(entry_id, variant_form_traits) |> 
   distinct()
 
-## combine lexical unit, variant_form and variant_trait =======
-lu_form_df1 <- lu_form_df |> 
-  left_join(variant_form_and_trait_df, 
-            by = join_by("id"), 
-            relationship = "many-to-many")
+## Join the variant FORMS and TRAITS ========
+variants_df <- variant_form_df1 |> left_join(variant_traits_df1, by = join_by("entry_id"))
+
+## create a tibble of <variant> forms and <trait> ====== #
+# variant_form1 <- unlist(variant_form)
+# variant_form1_names <- names(variant_form1)
+# variant_form1_names <- str_replace_all(variant_form1_names, "__.*$", "")
+# variant_form1_df <- tibble(variant_form = unname(variant_form1), id = variant_form1_names)
+# 
+# variant_traits1 <- unlist(variant_traits)
+# variant_traits1_names <- names(variant_traits1)
+# variant_traits1_names <- str_replace_all(variant_traits1_names, "__.*$", "")
+# variant_traits1_df <- tibble(variant_morph_type = unname(variant_traits1), id = variant_traits1_names)
+# 
+# variant_form_and_trait_df <- variant_form1_df |> 
+#   filter(!is.na(variant_form)) |> 
+#   left_join(variant_traits1_df |> 
+#               filter(!is.na(variant_morph_type)), 
+#             by = join_by("id"), 
+#             relationship = "many-to-many") |> 
+#   distinct()
+
+
+
+### JOIN the variant with the LU and senses =======
+
+senses_gloss_lang_df7 <- senses_gloss_lang_df6 |> 
+  left_join(variants_df, by = join_by("entry_id"))
+
+
+### save to google spreadsheets TO BE CHECKED WITH THE BASIC VOCAB LIST ======
+#### create an empty google spreadsheet ======
+drive_create(name = "FLEx_contemporary_lexicon",
+             path = "https://drive.google.com/drive/folders/1YalnbNCFVC01oPGZAwtmudlmyUfUyNdI",
+             type = "spreadsheet")
+# Created Drive file:
+#   • FLEx_contemporary_lexicon <id: 1hY1KtfpxOr6v3-NoahryQVHTvMc7T369zyFrXbGvSzo>
+#   With MIME type:
+#   • application/vnd.google-apps.spreadsheet
+
+#### now save the FLEX lexicon to the google spreadsheet ======
+##### full entries
+sheet_write(senses_gloss_lang_df7,
+            ss = "1hY1KtfpxOr6v3-NoahryQVHTvMc7T369zyFrXbGvSzo",
+            sheet = "Sheet1")
+##### selected ones for checking with the basic vocab list
+senses_gloss_lang_df7 |> 
+  select(entry_id, trait, form, sense_id, english_form, indonesian_form, gram_vals) |> 
+  sheet_write(ss = "1hY1KtfpxOr6v3-NoahryQVHTvMc7T369zyFrXbGvSzo",
+              sheet = "To-check-with-basic-vocab")
+senses_gloss_lang_df7 |> 
+  write_rds("senses_gloss_lang_df7.rds")
+
+
+
+## combine lexical unit, variant_form and variant_trait ======= #
+# lu_form_df1 <- lu_form_df |> 
+#   left_join(variant_form_and_trait_df, 
+#             by = join_by("id"), 
+#             relationship = "many-to-many")
 
 # ================================ #
 
 
-
+# IGNORE THE FOLLOWING CODES (OLD ONES)
 
 # LEXICAL-UNIT (with SENSE data): extract the <lexical-unit> using purrr::map() for each <entry> =====
 ## gather the lexical unit, text source, and lexical unit trait =======
