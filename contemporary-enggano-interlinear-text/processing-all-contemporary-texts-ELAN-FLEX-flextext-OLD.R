@@ -7,8 +7,6 @@ interlinear_text <- xml_file |>
   read_xml() |> 
   xml_find_all("interlinear-text")
 
-i <- 1
-
 title <- interlinear_text |> 
   xml_find_all("item[@type=\"title\" and @lang=\"eno\"]") |> 
   xml_text() |> 
@@ -22,7 +20,7 @@ phrases <- paragraphs |>
 
 # 1
 
-phrases <- phrases[-16]
+# phrases <- phrases[-16]
 
 eno_text <- phrases |> 
   map(xml_find_all, "phrase/item[@type=\"txt\" and @lang=\"eno\"]") |> 
@@ -58,19 +56,19 @@ eno_text_gloss_df_all <- list_rbind(eno_text_gloss_df)
 eno_text_gloss_df_all |> write_rds("eno_text_gloss_df_all.rds")
 
 # 2
-eno_words <- phrases |>
-  map(~map(., ~xml_find_all(., "phrase/words/word/item[@type=\"txt\" and @lang=\"eno\"]"))) |>
-  map(~map(., ~xml_text(.)))
-eno_words_id <- phrases |>
-  map(~map(., ~xml_find_all(., "phrase/words/word"))) |>
-  map(~map(., ~xml_attr(., "guid"))) |>
-  map(~map(., \(x) x[!is.na(x)]))
-## combine and link eno words and eno words id
-eno_words_and_id <- map2(eno_words, eno_words_id, ~tibble(words = .x,
-                                                          words_id = .y))
-## combine and link eno words and eno words id with the phrase id
-eno_words_and_id <- eno_words_and_id |>
-  map2(.y = eno_text_id, ~mutate(., phrase_id = .y))
+# eno_words <- phrases |>
+#   map(~map(., ~xml_find_all(., "phrase/words/word/item[@type=\"txt\" and @lang=\"eno\"]"))) |>
+#   map(~map(., ~xml_text(.)))
+# eno_words_id <- phrases |>
+#   map(~map(., ~xml_find_all(., "phrase/words/word"))) |>
+#   map(~map(., ~xml_attr(., "guid"))) |>
+#   map(~map(., \(x) x[!is.na(x)]))
+# ## combine and link eno words and eno words id
+# eno_words_and_id <- map2(eno_words, eno_words_id, ~tibble(words = .x,
+#                                                           words_id = .y))
+# ## combine and link eno words and eno words id with the phrase id
+# eno_words_and_id <- eno_words_and_id |>
+#   map2(.y = eno_text_id, ~mutate(., phrase_id = .y))
 
 # 3
 
@@ -110,6 +108,7 @@ for (i in seq_along(title)) {
       map(~map(., ~xml_find_first(., "item[@type=\"txt\" and @lang=\"eno\"]"))) |> 
       map(~map(., ~xml_text(.))) |> 
       map(~map(., \(x) if(identical(x, character(0))) NA else x)) |> 
+      map(~map(., \(x) if(!nzchar(x)) NA else x)) |> 
       map(unlist) |> 
       map2(.y = eno_text_id_subset, ~tibble(eno_word = .x, phrase_id = .y))
     
@@ -124,6 +123,7 @@ for (i in seq_along(title)) {
       map(~map(., ~xml_find_first(., "item[@type=\"gls\" and @lang=\"en\"]"))) |> 
       map(~map(., ~xml_text(.))) |> 
       map(~map(., \(x) if(identical(x, character(0))) NA else x)) |> 
+      map(~map(., \(x) if(!nzchar(x)) NA else x)) |> 
       map(unlist) |> 
       map(~tibble(eno_word_gloss_en = .))
     
@@ -138,6 +138,7 @@ for (i in seq_along(title)) {
       map(~map(., ~xml_find_first(., "item[@type=\"gls\" and @lang=\"id\"]"))) |> 
       map(~map(., ~xml_text(.))) |> 
       map(~map(., \(x) if(identical(x, character(0))) NA else x)) |> 
+      map(~map(., \(x) if(!nzchar(x)) NA else x)) |> 
       map(unlist) |> 
       map(~tibble(eno_word_gloss_id = .))
     
@@ -152,6 +153,7 @@ for (i in seq_along(title)) {
       map(~map(., ~xml_find_first(., "item[@type=\"pos\" and @lang=\"en\"]"))) |> 
       map(~map(., ~xml_text(.))) |> 
       map(~map(., \(x) if(identical(x, character(0))) NA else x)) |> 
+      map(~map(., \(x) if(!nzchar(x)) NA else x)) |>
       map(unlist) |> 
       map(~tibble(eno_word_pos = .))
     
@@ -164,6 +166,7 @@ for (i in seq_along(title)) {
     df_eno_word_id <- x |> 
       map(~map(., ~xml_attr(., "guid"))) |> 
       map(~map(., \(x) if(identical(x, character(0))) NA else x)) |>
+      map(~map(., \(x) if(!nzchar(x)) NA else x)) |>
       map(unlist) |> 
       map(~tibble(eno_word_id = .))
     
@@ -178,7 +181,8 @@ for (i in seq_along(title)) {
     #   map(~tibble(morph = .)) |> 
     #   map(~mutate(., morph = replace(morph, morph == "NA", NA)))
     df_eno_morph <- x |> 
-      map(~map(., ~xml_find_all(., ".//morphemes/morph/item[@type=\"txt\" and @lang=\"eno\"]"))) |> 
+      map(~map(., ~xml_find_all(., ".//morphemes/morph"))) |> 
+      map(~map(., ~xml_find_first(., "item[@type=\"txt\" and @lang=\"eno\"]"))) |> 
       map(~map(., ~xml_text(.))) |> 
       map(~map(., \(x) if(identical(x, character(0))) NA else x)) |>
       map(~map(., ~paste(., collapse= "___"))) |> 
@@ -242,7 +246,8 @@ for (i in seq_along(title)) {
     #   map(~tibble(lex_entry = .)) |> 
     #   map(~mutate(., lex_entry = replace(lex_entry, lex_entry == "NA", NA)))
     df_eno_morph_lex_entry <- x |> 
-      map(~map(., ~xml_find_all(., ".//morphemes/morph/item[@type=\"cf\" and @lang=\"eno\"]"))) |> 
+      map(~map(., ~xml_find_all(., ".//morphemes/morph"))) |> 
+      map(~map(., ~xml_find_first(., "item[@type=\"cf\" and @lang=\"eno\"]"))) |> 
       map(~map(., ~xml_text(.))) |> 
       map(~map(., \(x) if(identical(x, character(0))) NA else x)) |>
       map(~map(., ~paste(., collapse= "___"))) |> 
@@ -262,7 +267,8 @@ for (i in seq_along(title)) {
     #   map(~tibble(homonym_id = .)) |> 
     #   map(~mutate(., homonym_id = replace(homonym_id, homonym_id == "NA", NA)))
     df_eno_morph_homonym_id <- x |> 
-      map(~map(., ~xml_find_all(., ".//morphemes/morph/item[@type=\"hn\" and @lang=\"eno\"]"))) |> 
+      map(~map(., ~xml_find_all(., ".//morphemes/morph"))) |> 
+      map(~map(., ~xml_find_first(., "item[@type=\"hn\" and @lang=\"eno\"]"))) |> 
       map(~map(., ~xml_text(.))) |> 
       map(~map(., \(x) if(identical(x, character(0))) NA else x)) |>
       map(~map(., ~paste(., collapse= "___"))) |> 
@@ -282,7 +288,8 @@ for (i in seq_along(title)) {
     #   map(~tibble(morph_gloss_en = .)) |> 
     #   map(~mutate(., morph_gloss_en = replace(morph_gloss_en, morph_gloss_en == "NA", NA)))
     df_eno_morph_gloss_eng <- x |> 
-      map(~map(., ~xml_find_all(., ".//morphemes/morph/item[@type=\"gls\" and @lang=\"en\"]"))) |> 
+      map(~map(., ~xml_find_all(., ".//morphemes/morph"))) |> 
+      map(~map(., ~xml_find_first(., "item[@type=\"gls\" and @lang=\"en\"]"))) |> 
       map(~map(., ~xml_text(.))) |> 
       map(~map(., \(x) if(identical(x, character(0))) NA else x)) |>
       map(~map(., ~paste(., collapse= "___"))) |> 
@@ -302,7 +309,8 @@ for (i in seq_along(title)) {
     #   map(~tibble(morph_gram = .)) |> 
     #   map(~mutate(., morph_gram = replace(morph_gram, morph_gram == "NA", NA)))
     df_eno_morph_gram <- x |> 
-      map(~map(., ~xml_find_all(., ".//morphemes/morph/item[@type=\"msa\" and @lang=\"en\"]"))) |> 
+      map(~map(., ~xml_find_all(., ".//morphemes/morph"))) |> 
+      map(~map(., ~xml_find_first(., "item[@type=\"msa\" and @lang=\"en\"]"))) |> 
       map(~map(., ~xml_text(.))) |> 
       map(~map(., \(x) if(identical(x, character(0))) NA else x)) |>
       map(~map(., ~paste(., collapse= "___"))) |> 
