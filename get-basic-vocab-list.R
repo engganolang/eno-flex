@@ -133,16 +133,23 @@ eng_gloss <- tibble(gloss = unique(eng_gloss1), cats = 'eng_gloss1') |>
 
 
 ## 4. to use the one-word regex to filter from the general list words that are not in the regex
-eng_gloss3 <- c(unique(eng_gloss$gloss), 'silent', 'quiet', 'pass', 'climb', 'sir', 'we', 'I', 'their', 'its', 'you', 'she', 'he', 'it', 'they', 'her', 'his', 'the', 'able', 'a', 'at', 'me', 'my', 'mine', 'no', 'god', 'talk', 'bad', 'wicked', 'search', 'cut', 'drown', 'fight', 'boat', 'bowl', 'lid', 'hit', 'girl', 'similar', 'scream', 'shout', 'wake', 'awake', 'wine', 'asleep', 'loose', 'split', 'above', 'top', 'born', 'which')
+eng_gloss3 <- c(unique(eng_gloss$gloss), 'silent', 'quiet', 'pass', 'climb', 'sir', 'we', 'I', 'their', 'its', 'you', 'she', 'he', 'it', 'they', 'her', 'his', 'the', 'able', 'a', 'at', 'me', 'my', 'mine', 'no', 'god', 'talk', 'bad', 'wicked', 'search', 'cut', 'drown', 'fight', 'boat', 'bowl', 'lid', 'hit', 'girl', 'similar', 'scream', 'shout', 'wake', 'awake', 'wine', 'asleep', 'loose', 'split', 'above', 'top', 'born', 'which', 'our')
 service_list_1_manual_check <- read_lines('basic-vocab-list/1-general-service-1st-already-in-contemporary-FLEx.txt')
 service_list_2_manual_check <- read_lines('basic-vocab-list/1-general-service-2nd-already-in-contemporary-FLEx.txt')
 eng_gloss3 <- unique(c(eng_gloss3, service_list_1_manual_check, service_list_2_manual_check))
 
+### get the one-word gloss not in the first 1000 words of the general list
 oneword_gloss_not_in_flex <- setdiff(first1000_chr, eng_gloss3)
 oneword_gloss_not_in_flex
 length(oneword_gloss_not_in_flex)
 # [1] 531
+# save the words not in the FLEx db to elicit during fieldwork
+# tibble(English_gloss = oneword_gloss_not_in_flex) |> 
+#   mutate(Indonesian_gloss_GT = "", Indonesian_gloss_DL = "", Enggano_orth = "", Enggano_kalimat = "", Indonesian_kalimat = "") |> 
+#   writexl::write_xlsx(path = "basic-vocab-list/data-to-elicit.xlsx",
+#                       format_headers = FALSE)
 
+### get the one-word gloss that, on the contrary, NOT in the first 1000 words of general list
 oneword_gloss_not_in_service_list <- setdiff(eng_gloss3, first1000_chr)
 oneword_gloss_not_in_service_list
 length(oneword_gloss_not_in_service_list) # the first one thousand general list
@@ -165,3 +172,14 @@ flexcheckdone |>
   filter(str_detect(english_form, '[A-Z]{2,}')) |> 
   select(form, english_form, indonesian_form, gram_vals) |> 
   as.data.frame()
+
+
+## Check the Indonesian in FLEX and in the data-to-elicit sheet
+data_to_elicit <- readxl::read_xlsx("basic-vocab-list/data-to-elicit.xlsx")
+flexdb_idn <- flexdb |> pull(indonesian_form)
+data_to_elicit_idn <- data_to_elicit$Indonesian_gloss_all
+index_of_words_from_flexdbIDN_appearing_in_dataToElicit <- map_int(data_to_elicit_idn, 
+                                                                   ~which(str_detect(., paste("\\b", flexdb_idn, "\\b", sep = "")))[1])
+flexdb_idn2 <- flexdb_idn[index_of_words_from_flexdbIDN_appearing_in_dataToElicit[which(!is.na(index_of_words_from_flexdbIDN_appearing_in_dataToElicit))]]
+data_to_elicit_idn2 <- data_to_elicit_idn[which(!is.na(index_of_words_from_flexdbIDN_appearing_in_dataToElicit))]
+words_from_flexdbIDN_appearing_in_dataToElicit <- data.frame(data_to_elicit = data_to_elicit_idn2, flex_db = flexdb_idn2)
