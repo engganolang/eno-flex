@@ -4,7 +4,7 @@ library(googledrive)
 library(googlesheets4)
 
 
-flexdb <- read_xml("FLEX-contemporary.xml")
+flexdb <- read_xml("FLEX-contemporary.xml") # August version of file
 
 
 # MAIN ENTRY ======
@@ -32,8 +32,8 @@ myentry_children_name <- myentry %>%
   unlist() %>% 
   unique()
 myentry_children_name
-# [1] "lexical-unit"  "trait"         "etymology"     "relation"      "sense"        
-# [6] "note"          "variant"       "pronunciation" "citation"  
+# [1] "lexical-unit" (done)  "trait" (done)       "etymology" (done)     "relation"      "sense" (done)        
+# [6] "note" (done)          "variant" (done)      "pronunciation" (NA) "citation" (done)
 
 
 # LEXICAL-UNIT: extract the <lexical-unit> using purrr::map() for each <entry> =====
@@ -87,21 +87,6 @@ lu_form_df <- tibble(entry_id = lu_text_source_entry_id,
   left_join(select(entry_attr_df, entry_id, order),
             by = join_by("entry_id"))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # SENSE: extract children elements within <sense>, including sense id attributes =====
 
 ## find all <sense> nodes =====
@@ -111,11 +96,14 @@ senses <- myentry %>%
 ## check the children of the "sense" element ====
 senses |> map(~xml_children(.)) |> map(~xml_name(.)) |> unlist() |> unique()
 ### [1] "grammatical-info"            "gloss"            "definition"
-senses |> map(~xml_find_all(.,"grammatical-info")) |> map(~xml_children(.)) |> map(~xml_name(.)) |> unlist() |> unique()
+senses |> map(~xml_find_all(.,"grammatical-info")) |> map(~xml_children(.)) |> 
+  map(~xml_name(.)) |> unlist() |> unique()
 ### [1] "trait"
-senses |> map(~xml_find_all(.,"gloss")) |> map(~xml_children(.)) |> map(~xml_name(.)) |> unlist() |> unique()
+senses |> map(~xml_find_all(.,"gloss")) |> map(~xml_children(.)) |> 
+  map(~xml_name(.)) |> unlist() |> unique()
 ### [1] "text"
-senses |> map(~xml_find_all(.,"definition")) |> map(~xml_children(.)) |> map(~xml_name(.)) |> unlist() |> unique()
+senses |> map(~xml_find_all(.,"definition")) |> map(~xml_children(.)) |> 
+  map(~xml_name(.)) |> unlist() |> unique()
 ### [1] "form"
 
 senses_attr <- senses |> 
@@ -149,8 +137,6 @@ senses_attr <- map2(.x = senses_attr, .y = names(senses_attr), ~mutate(.x, entry
 senses_attr_df <- senses_attr |> 
   list_rbind() |> 
   select(entry_id, sense_id, order)
-
-
 
 # names(senses) <- paste(myentry_id, "__", sep = "")
 # senses_id <- senses |> 
@@ -215,10 +201,6 @@ nrow(senses_gloss_lang_df)
 # [1] 2900
 sort(unique(senses_gloss_lang_df$sense_form_n))
 # [1] 1 2 3 4 5 6
-
-
-
-
 
 senses_gloss_lang_df1 <- senses_gloss_lang_df |> 
   group_by(entry_id) |> 
@@ -335,7 +317,6 @@ senses_gloss_lang_df2 <- senses_gloss_lang_df2 |>
                                                "\\1@\\2"),
                                sense_forms))
 
-
 senses_gloss_lang_df3 <- senses_gloss_lang_df2 |> 
   mutate(sense_langs = str_split(sense_langs, "\\@"),
          sense_forms = str_split(sense_forms, "\\@")) |> 
@@ -356,11 +337,35 @@ senses_gloss_lang_df4 <- senses_gloss_lang_df3 |>
   mutate(sense_id = senses_attr_df$sense_id, 
          sense_order = senses_attr_df$order) |> 
   left_join(lu_form_df, relationship = "many-to-many", by = join_by("entry_id")) |> 
-  select(entry_id, form, lang, trait, order, sense_id, sense_order, english, english_form, indonesian, indonesian_form)
+  select(entry_id, form, lang, trait, order, sense_id, sense_order, 
+         english, english_form, indonesian, indonesian_form)
 
+### gather the 'Definition' as the child of SENSES (and of equal level with 'Gloss') ======
+sense_definition <- senses |> 
+  map(~xml_find_all(., 'definition/form'))
+sense_definition_lang <- sense_definition |> 
+  map(~xml_attr(., 'lang'))
+sense_definition_text <- sense_definition |> 
+  map(~xml_find_all(., 'text')) |> 
+  map(~xml_text(.))
+sense_definition_df <- map2(.x = sense_definition_lang, 
+                            .y = sense_definition_text,
+                            ~tibble(defin_lang = .x, 
+                                    defin_form = .y))
+sense_definition_df <- map2(.x = sense_definition_df,
+                            .y = names(sense_definition_df),
+                            ~mutate(.x, entry_id = .y)) |> 
+  list_rbind()
+sense_definition_df_wide <- sense_definition_df |> 
+  pivot_wider(names_from = defin_lang, 
+              values_from = defin_form) |> 
+  rename(defin_en = en,
+         defin_id = id)
 
-
-
+### combine the 'Definition' with the 'Gloss' and LU form ======
+senses_gloss_lang_df4 <- senses_gloss_lang_df4 |> 
+  left_join(sense_definition_df_wide,
+            by = join_by('entry_id'))
 
 # SENSES: GRAMMATICAL INFO =====
 
@@ -406,15 +411,7 @@ senses_grm_df <- tibble(entry_id = senses_grm_entry_id,
 senses_gloss_lang_df5 <- senses_gloss_lang_df4 |> 
   left_join(senses_grm_df, by = join_by(entry_id, sense_id))
 senses_gloss_lang_df5
-
-
-
-
-
-
-
-
-
+## A tibble: 1,484 × 14
 
 # ETYMOLOGY ========
 ## get the etymology element =====
@@ -480,20 +477,191 @@ senses_gloss_lang_df6 <- senses_gloss_lang_df5 |>
   left_join(etym_df, 
             by = join_by(entry_id), 
             relationship = "many-to-many")
+# A tibble: 1,485 × 15
 
 
+# NOTE: extract the <note> for the lexeme entry ======
+notes <- myentry |> 
+  map(~xml_find_all(., 'note'))
+names(notes) <- myentry_id_num
+notes_children <- notes |> 
+  map(~xml_children(.)) |> 
+  map(~xml_name(.)) |> 
+  unlist() |> 
+  unique()
+notes_children
+# [1] "form"
+notes_grandchilren <- notes |> 
+  map(~xml_find_all(., 'form')) |> 
+  map(~xml_children(.)) |> 
+  map(~xml_name(.)) |> 
+  unlist() |> 
+  unique()
+notes_grandchilren
+# [1] "text"
+notes_text_lang <- notes |> 
+  map(~xml_find_all(., 'form')) |> 
+  map(~xml_attr(., 'lang'))
+notes_text_lang |> unlist() |> unique()
+# [1] "en" --- SO I DO NOT NEED TO MAKE A COLUMN FOR LANGUAGE OF THE NOTE
+notes_text <- notes |> 
+  map(~xml_find_all(., 'form/text')) |> 
+  map(~xml_text(.))
+notes_text_df <- map2(.x = notes_text,
+                      .y = names(notes_text),
+                      ~tibble(entry_id = .y,
+                              notes_lexeme = .x)) |> 
+  list_rbind()
+
+## join the NOTE to the main database ======
+senses_gloss_lang_df6 <- senses_gloss_lang_df6 |> 
+  left_join(notes_text_df, by = join_by("entry_id"))
+senses_gloss_lang_df6
+# A tibble: 1,485 × 17
+
+# CITATION: Extract the <citation> element of the entry ======
+citation <- myentry |> 
+  map(~xml_find_all(., 'citation'))
+names(citation) <- myentry_id_num
+citation_children <- citation |> 
+  map(~xml_children(.)) |> 
+  map(~xml_name(.)) |> 
+  unlist() |> 
+  unique()
+citation_children
+# [1] "form"
+citation_grandchilren <- citation |> 
+  map(~xml_find_all(., 'form')) |> 
+  map(~xml_children(.)) |> 
+  map(~xml_name(.)) |> 
+  unlist() |> 
+  unique()
+citation_grandchilren
+# [1] "text"
+citation_text_lang <- citation |> 
+  map(~xml_find_all(., 'form')) |> 
+  map(~xml_attr(., 'lang'))
+citation_text_lang |> unlist() |> unique()
+# [1] "eno" --- SO I DO NOT NEED TO MAKE A COLUMN FOR LANGUAGE OF THE NOTE
+citation_text <- citation |> 
+  map(~xml_find_all(., 'form/text')) |> 
+  map(~xml_text(.))
+citation_text_df <- map2(.x = citation_text,
+                         .y = names(citation_text),
+                         ~tibble(entry_id = .y, citation_lexeme = .x)) |> 
+  list_rbind()
+
+senses_gloss_lang_df6 <- senses_gloss_lang_df6 |> 
+  left_join(citation_text_df, by = join_by('entry_id'))
+senses_gloss_lang_df6
+# A tibble: 1,485 × 17
 
 
+# RELATION: extract the <relation> element ======
+relation <- myentry |> 
+  map(~xml_find_all(., 'relation'))
+names(relation) <- myentry_id_num
 
+## check which element and how many contains value =====
+(contains_values <- which(map_int(relation, length) > 0))
+length(contains_values)
 
+## check relation attribute ======
+relation_attr <- relation[contains_values] |> 
+  map(~xml_attrs(.)) |> 
+  map(unlist)
+relation_attr_df <- map2(.x = relation_attr,
+                         .y = map(relation_attr, names),
+                         ~tibble(relation_attr = .x,
+                                 relation_label = .y))
+relation_attr_df <- 
+  map2(.x = relation_attr_df,
+       .y = names(relation_attr),
+       ~mutate(.x, entry_id = .y))
+relation_attr_df <- relation_attr_df |> 
+  map(~group_by(., relation_label)) |> 
+  map(~mutate(., row = row_number())) |> 
+  map(~pivot_wider(., 
+                   names_from = relation_label, 
+                   values_from = relation_attr,
+                   values_fill = NA)) |> 
+  map(~select(., -row)) |> 
+  list_rbind()
+relation_attr_df
 
+## check relation children =====
+relation_children <- relation |> 
+  map(~xml_children(.)) |> 
+  map(~xml_name(.)) |> 
+  unlist() |> 
+  unique()
+relation_children
+# [1] "trait"
 
+## extract the 'trait' as character via regex ====
+relation_trait <- relation[contains_values] |> 
+  map(as.character)
+relation_trait1 <- relation_trait |> 
+  map(~str_extract_all(., '(?<=\\<trait )[^>]+'))
+relation_trait1
 
+## turn the 'trait' of RELATION into tibble =========
+relation_trait2 <- relation_trait1 |> 
+  map_depth(2, \(x) paste(x, collapse = "____")) |> 
+  map_depth(2, \(x) str_replace_all(x, '("|\\/)', '')) |> 
+  map_depth(2, \(x) tibble(vals = x)) |> 
+  map(~list_rbind(.)) |> 
+  map2(.y = names(relation_trait1), ~mutate(.x, entry_id = .y)) |> 
+  list_rbind()
 
+## split the primary status of the component lexeme and the lexeme form =====
+relation_trait3 <- relation_trait2 |> 
+  mutate(complex_form_primary_status = if_else(str_detect(vals, "is\\-primary"), 
+                                               TRUE, FALSE),
+         trait_attr = str_replace_all(vals,
+                                      "name\\=is\\-primary[^_]+_{2,}",
+                                      ""),
+         trait_type = str_extract(trait_attr,
+                                  "(?<=value\\=).+$"),
+         trait_attr = if_else(!nzchar(trait_attr),
+                              NA,
+                              trait_attr)) |> 
+  select(-vals)
+relation_trait3
+
+## bind relation_trait3 and relation_attr_df =====
+relation_trait4 <- relation_attr_df |> 
+  bind_cols(relation_trait3 |> 
+              select(-entry_id))
+relation_trait4
+  
+### further processing, such as to be integrated to the main database ======
+relation_trait5 <- relation_trait4 |> 
+  mutate(ref_order_status = if_else(!is.na(order), 
+                                    paste(ref, "<order=", order, ">", sep = ""), 
+                                    ref),
+         ref_order_status = if_else(!is.na(order),
+                                    paste(ref_order_status, "<primary=", 
+                                          complex_form_primary_status,
+                                          ">",
+                                          sep = ""),
+                                    ref_order_status)) |> 
+  group_by(entry_id) |> 
+  mutate(ref_order_status = paste(ref_order_status, collapse = "____")) |> 
+  ungroup() |> 
+  select(-order, -complex_form_primary_status, -ref) |> 
+  distinct() |> 
+  rename(relation_type = type)
+relation_trait5
+# A tibble: 44 × 5
+senses_gloss_lang_df6 <- senses_gloss_lang_df6 |> 
+  left_join(relation_trait5,
+            by = join_by("entry_id"))
+senses_gloss_lang_df6
+# A tibble: 1,485 × 21
 
 
 # VARIANT: extract <variant> using purrr::map() for each <entry> ======
-
 
 variant <- myentry |> 
   map(~xml_find_all(., "variant"))
@@ -590,11 +758,14 @@ senses_gloss_lang_df7 <- senses_gloss_lang_df6 |>
   left_join(variants_df, by = join_by("entry_id"))
 
 
+
+# SAVE TO GOOGLE SPREADSHET =======
 ### save to google spreadsheets TO BE CHECKED WITH THE BASIC VOCAB LIST ======
 #### create an empty google spreadsheet ======
-drive_create(name = "FLEx_contemporary_lexicon",
-             path = "https://drive.google.com/drive/folders/1YalnbNCFVC01oPGZAwtmudlmyUfUyNdI",
-             type = "spreadsheet")
+
+#drive_create(name = "FLEx_contemporary_lexicon",
+#             path = "https://drive.google.com/drive/folders/1YalnbNCFVC01oPGZAwtmudlmyUfUyNdI",
+#             type = "spreadsheet")
 # Created Drive file:
 #   • FLEx_contemporary_lexicon <id: 1hY1KtfpxOr6v3-NoahryQVHTvMc7T369zyFrXbGvSzo>
 #   With MIME type:
@@ -602,16 +773,16 @@ drive_create(name = "FLEx_contemporary_lexicon",
 
 #### now save the FLEX lexicon to the google spreadsheet ======
 ##### full entries
-sheet_write(senses_gloss_lang_df7,
-            ss = "1hY1KtfpxOr6v3-NoahryQVHTvMc7T369zyFrXbGvSzo",
-            sheet = "Sheet1")
+# sheet_write(senses_gloss_lang_df7,
+#             ss = "1hY1KtfpxOr6v3-NoahryQVHTvMc7T369zyFrXbGvSzo",
+#             sheet = "Sheet1")
 ##### selected ones for checking with the basic vocab list
-senses_gloss_lang_df7 |> 
-  select(entry_id, trait, form, sense_id, english_form, indonesian_form, gram_vals) |> 
-  sheet_write(ss = "1hY1KtfpxOr6v3-NoahryQVHTvMc7T369zyFrXbGvSzo",
-              sheet = "To-check-with-basic-vocab")
-senses_gloss_lang_df7 |> 
-  write_rds("senses_gloss_lang_df7.rds")
+# senses_gloss_lang_df7 |> 
+#   select(entry_id, trait, form, sense_id, english_form, indonesian_form, gram_vals) |> 
+#   sheet_write(ss = "1hY1KtfpxOr6v3-NoahryQVHTvMc7T369zyFrXbGvSzo",
+#               sheet = "To-check-with-basic-vocab")
+# senses_gloss_lang_df7 |> 
+#   write_rds("senses_gloss_lang_df7.rds")
 
 
 
@@ -626,8 +797,8 @@ senses_gloss_lang_df7 |>
 
 # IGNORE THE FOLLOWING CODES (OLD ONES)
 
-# LEXICAL-UNIT (with SENSE data): extract the <lexical-unit> using purrr::map() for each <entry> =====
-## gather the lexical unit, text source, and lexical unit trait =======
+# LEXICAL-UNIT (with SENSE data): extract the <lexical-unit> using purrr::map() for each <entry> 
+## gather the lexical unit, text source, and lexical unit trait 
 lu_form <- myentry %>% 
   .[sort(c(test_range, test_range_sense_one))] %>% 
   map(~xml_find_all(., "lexical-unit/form/text")) %>% 
@@ -644,7 +815,7 @@ lu_trait <- myentry %>%
   map(~xml_find_all(., "trait[@name='morph-type']")) %>% 
   map(~xml_attr(., "value"))
 
-## create the tibble =====
+## create the tibble
 lu_form_df <- pmap_df(list(a = lu_form, b = lu_text_source, c = lu_trait, d = myentry_id, e = lu_order),
                       function(d, a, e, c, b) tibble(id = d,
                                                      lu = a,
