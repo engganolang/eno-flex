@@ -10,18 +10,29 @@ lu_form_df <- read_rds("FLEX-lift-pre-fieldwork.rds")
 source("contemporary-enggano-interlinear-text/processing-all-contemporary-texts-ELAN-FLEX-flextext-NEW-splitting-morpheme.R")
 eno_elicitation_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-binded.rds")
 eno_natural_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded.rds")
+
+eno_morph_split1 <- eno_morph_split1 |> 
+  mutate(across(matches("^eno_phrase"), ~str_replace_all(., "\\s{2,}", " ")), 
+         across(where(is.character), ~str_trim(., side = "both"))) |>
+  mutate(text_title = str_replace_all(text_title, "(?<=^\\d\\d)_", "."))
+
 eno_example_references <- eno_elicitation_texts |> 
   select(text_title, phrase_id, phrase_line) |> 
   bind_rows(eno_natural_texts |> 
               select(text_title, phrase_id, phrase_line)) |> 
-  mutate(across(where(is.character), ~str_replace_all(., "_+", "."))) # |> 
-  # mutate(refs = paste(text_title,
-  #                     # "_", 
-  #                     # abbreviate(phrase_id, minlength = 5L),
-  #                     "_", phrase_line, sep = ""))
+  mutate(across(where(is.character), ~str_replace_all(., "_+", "."))) |> 
+  mutate(across(matches("^eno_phrase"), ~str_replace_all(., "\\s{2,}", " ")), 
+         across(where(is.character), ~str_trim(., side = "both"))) |>
+  mutate(refs = paste(text_title,
+                      # "_",
+                      # abbreviate(phrase_id, minlength = 5L),
+                      "_line:", phrase_line, sep = "")) |> 
+  mutate(is_natural_texts = if_else(str_detect(text_title, "^\\d"), 
+                                    TRUE, 
+                                    FALSE))
 
-eno_morph_split1 <- eno_morph_split1 |> 
-  left_join(eno_example_references)
+# eno_morph_split1 <- eno_morph_split1 |> 
+#   left_join(eno_example_references)
 
 # filtering all non-NAs lex_entry
 lexs <- eno_morph_split1 |> 
@@ -41,6 +52,16 @@ eno_morph_split1 |>
          !lex_entry %in% lu_form_df$form) |> 
   select(word, lex_entry) |> 
   distinct()
+
+# check which record has NA lex_entry, but complete word (and its glosses and examples [glosses])
+eno_morph_split1 |> 
+  filter(is.na(lex_entry), 
+         !is.na(word), 
+         !is.na(eno_word_gloss_en), 
+         !is.na(eno_word_gloss_id), 
+         !is.na(eno_phrase), 
+         !is.na(eno_phrase_gloss_id), 
+         !is.na(eno_phrase_gloss_eng))
 
 # # test-case with 'ueh "sleep; lying down"
 # lexs |> 
@@ -493,7 +514,7 @@ sent <- flex_lexicon2 |>
 
 # get example for lex_entry that is the same with the word
 sent_root <- sent |> 
-  filter(lx_equals_w) |> 
+  filter(lx_equals_w, eno_phrase_gloss_id != "") |> 
   select(-lx_equals_morph, -w_equals_morph) |> 
   group_by(entry_id, lex_entry, homonym_id, 
            sense_order, sense_gram) |> 
@@ -859,6 +880,8 @@ word_subentry_examples <- interim_word_subentry |>
          hm = homonym_id,
          et = etym) |> 
   select(-morph_type)
+
+dim(word_subentry_examples)
 
 subentries_colnames <- str_subset(colnames(word_subentry_examples),
                                   "^sew_\\d\\d$")
