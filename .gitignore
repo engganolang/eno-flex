@@ -17,9 +17,11 @@ WritingSystems/
 *.lift
 *.lift-ranges
 basic-vocab-list/**.tsv
+basic-vocab-list/valpal**
 *.exe
 contemporary-enggano-interlinear-text/**ELAN.flextext
 contemporary-enggano-interlinear-text/**analysed.flextext
 contemporary-enggano-interlinear-text/**xling-3-ORIG.xml
 contemporary-enggano-interlinear-text/**xling-3.xml
 contemporary-enggano-interlinear-text/**original.txt
+contemporary-enggano-interlinear-text/**-code.R
