@@ -1,0 +1,21 @@
+note on irregularities in the elicitation flex data
+
+0. the gloss attribute name for Bakblau line 66 "Bak Hėkė kita akan pelihara" must be changed to "id"
+
+1. the gloss element name for 
+
+	"he buys a book with his child", 
+	"he left home", 
+	"saya membunuh dua laki-laki", 
+	"don't come any closer, I will kill you later", 
+	"kalian datang kalian pergi", 
+	"kamu akan membunuh saya", 
+	"Setelah selesai makan, mereka pun kembali bekerja"
+	"saya membuat anak itu  jatuh dari pohon"
+	
+needs to be change to "id"
+
+2. The "whose child is naughty? Pak Dendi's child" needs to be split into 114.1 and 114.2
+	- move the "whose child is naughty" to 114.1
+
+3. "saya tidak melihat dia tadi", "saya tidak dilihatnya'" needs to be changed to "id" from "eno"
