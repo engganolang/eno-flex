@@ -72,19 +72,24 @@ eno_text_gloss_idn <- phrases |>
   map(\(x) replace(x, nchar(x) == 0, NA))
 
 ## turn the above data into a tibble for each text title
-eno_text_gloss_df <- pmap(list(a = eno_text_id, b = eno_text,
-                               c = eno_text_gloss_idn,
-                               d = eno_text_gloss_eng),
-                          \(a, b, c, d) 
+eno_text_gloss_df <- pmap(list(a = eno_text_id, b = eno_segnum,
+                               c = eno_text,
+                               d = eno_text_gloss_idn,
+                               e = eno_text_gloss_eng),
+                          \(a, b, c, d, e) 
                           tibble(phrase_id = a, 
-                                 eno_phrase = b, 
-                                 eno_phrase_gloss_id = c, 
-                                 eno_phrase_gloss_eng = d)) |> 
+                                 phrase_line = b,
+                                 eno_phrase = c, 
+                                 eno_phrase_gloss_id = d, 
+                                 eno_phrase_gloss_eng = e)) |> 
   map2(.y = title, ~mutate(., text_title = .y))
 
 ## combine the tibbles list from all texts into one tibble
 eno_text_gloss_df_all <- list_rbind(eno_text_gloss_df)
-
+eno_text_gloss_df |> 
+  write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new.rds")
+eno_text_gloss_df_all |> 
+  write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded.rds")
 
 ## 2. Gathering the WORD and MORPH (and their glosses, POS, etc.) ======
 
@@ -94,6 +99,7 @@ df_all <- vector(mode = "list", length = length(title))
 ### ensure that the length of the list elements equals the length of the title
 length(df_all) == length(title)
 
+### for lop to process each text
 for (i in seq_along(title)) {
   
   # i <- 1
@@ -103,6 +109,7 @@ for (i in seq_along(title)) {
   
   eno_text_id_subset <- eno_text_id[[i]]
   
+  ### print some progress message
   message(paste("processing \"", title[i], "\"\n", sep = ""))
   
   ### eno word form =====
@@ -323,13 +330,15 @@ for (i in seq_along(title)) {
   
 } # end of if
 
+### save the tibbles for each text ======
 df_all |> 
   write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_as_tibble-new.rds")
-eno_text_gloss_df |> 
-  write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new.rds")
+
 
 
 # B. Elicitation ===============
+
+## Processing the elicitation data (non-natural texts)
 
 library(tidyverse)
 library(xml2)
@@ -356,15 +365,23 @@ phrases <- paragraphs |>
 
 ## 1. Gathering the original texts (under the <phrases> node) ======
 
+
+### Enggano texts/elicited materials
 eno_text <- phrases |> 
   map(xml_find_all, "phrase/item[@type=\"txt\" and @lang=\"eno\"]") |> 
   map(xml_text)
+
+### phrase ID
 eno_text_id <- phrases |> 
   map(xml_find_all, "phrase") |> 
   map(xml_attr, "guid")
+
+### segment number (i.e., the line number of the Enggano texts)
 eno_segnum <- phrases |> 
   map(xml_find_all, "phrase/item[@type=\"segnum\" and @lang=\"en\"]") |> 
   map(xml_text)
+
+### English free translation of the texts/elicited materials
 eno_text_gloss_eng <- phrases |> 
   map(~map(., ~xml_find_all(., "phrase/item[@type=\"gls\" and @lang=\"en\"]"))) |> 
   map(~map(., ~xml_text(.))) |> 
@@ -372,6 +389,8 @@ eno_text_gloss_eng <- phrases |>
   # map(~map(., \(x) if(!is.na(x) & nchar(x) == 0) NA else x)) |> 
   map(unlist) |> 
   map(\(x) replace(x, nchar(x) == 0, NA))
+
+### Indonesian free translation of the texts/elicited materials
 eno_text_gloss_idn <- phrases |> 
   map(~map(., ~xml_find_all(., "phrase/item[@type=\"gls\" and @lang=\"id\"]"))) |> 
   map(~map(., ~xml_text(.))) |> 
@@ -380,17 +399,28 @@ eno_text_gloss_idn <- phrases |>
   map(unlist) |> 
   map(\(x) replace(x, nchar(x) == 0, NA))
 
+### combine the text data from different elicited files into a list of tibbles
 eno_text_gloss_df <- pmap(list(a = eno_text_id, b = eno_text,
                                c = eno_text_gloss_idn,
-                               d = eno_text_gloss_eng),
-                          \(a, b, c, d) 
+                               d = eno_text_gloss_eng,
+                               e = eno_segnum),
+                          \(a, b, c, d, e) 
                           tibble(phrase_id = a, 
+                                 phrase_line = e,
                                  eno_phrase = b, 
                                  eno_phrase_gloss_id = c, 
                                  eno_phrase_gloss_eng = d)) |> 
   map2(.y = title, ~mutate(., text_title = .y))
 eno_text_gloss_df_all <- list_rbind(eno_text_gloss_df)
 
+### save the list tibbles
+eno_text_gloss_df |> 
+  write_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new.rds")
+
+
+### save the binded tibbles (non-list format)
+eno_text_gloss_df_all |> 
+  write_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-binded.rds")
 
 ## 2. Gathering the WORD and MORPH (and their glosses, POS, etc.) ======
 
@@ -624,5 +654,5 @@ for (i in seq_along(title)) {
 
 df_all |> 
   write_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_as_tibble-new.rds")
-eno_text_gloss_df |> 
-  write_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new.rds")
+
+
