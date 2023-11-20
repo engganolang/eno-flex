@@ -9,7 +9,7 @@ WritingSystems/
 *contemporary.lift-ranges
 *contemporary.xml
 *import-settings.map
-*.PNG
+FLEX-lexicon-with-sub-entries*.PNG
 *.doc
 *.docx
 *.xls
@@ -25,3 +25,4 @@ contemporary-enggano-interlinear-text/**xling-3-ORIG.xml
 contemporary-enggano-interlinear-text/**xling-3.xml
 contemporary-enggano-interlinear-text/**original.txt
 contemporary-enggano-interlinear-text/**-code.R
+flex-sfm-import-experiment/*.PNG
