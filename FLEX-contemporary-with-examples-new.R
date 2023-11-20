@@ -305,4 +305,49 @@ lu_form_df <- lu_form_df |>
 lu_form_df <- lu_form_df |> 
   left_join(s_ex_all_df)
 
+
+# NOTE: extract the <note> for the lexeme entry ======
+## re-run later
+# notes <- myentry |> 
+#   map(~xml_find_all(., 'note'))
+# names(notes) <- myentry_id_num
+# notes_children <- notes |> 
+#   map(~xml_children(.)) |> 
+#   map(~xml_name(.)) |> 
+#   unlist() |> 
+#   unique()
+# notes_children
+# # [1] "form"
+# notes_grandchilren <- notes |> 
+#   map(~xml_find_all(., 'form')) |> 
+#   map(~xml_children(.)) |> 
+#   map(~xml_name(.)) |> 
+#   unlist() |> 
+#   unique()
+# notes_grandchilren
+# # [1] "text"
+# notes_text_lang <- notes |> 
+#   map(~xml_find_all(., 'form')) |> 
+#   map(~xml_attr(., 'lang'))
+# notes_text_lang |> unlist() |> unique()
+# # [1] "en" --- SO I DO NOT NEED TO MAKE A COLUMN FOR LANGUAGE OF THE NOTE
+# notes_text <- notes |> 
+#   map(~xml_find_all(., 'form/text')) |> 
+#   map(~xml_text(.))
+# notes_text_df <- map2(.x = notes_text,
+#                       .y = names(notes_text),
+#                       ~tibble(entry_id = .y,
+#                               notes_lexeme = .x)) |> 
+#   list_rbind() |> 
+#   mutate(notes_lexeme = if_else(str_detect(notes_lexeme, "^\\("),
+#                                 str_replace_all(notes_lexeme, "(^\\(|\\)$)", ""),
+#                                 notes_lexeme))
+# notes_text_df
+
+
 write_rds(lu_form_df, "FLEX-lift-pre-fieldwork.rds")
+
+
+
+
+
