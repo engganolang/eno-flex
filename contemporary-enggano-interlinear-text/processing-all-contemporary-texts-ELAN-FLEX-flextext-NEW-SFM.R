@@ -6,6 +6,7 @@
 
 library(tidyverse)
 library(xml2)
+
 lu_form_df <- read_rds("FLEX-lift-pre-fieldwork.rds")
 source("contemporary-enggano-interlinear-text/processing-all-contemporary-texts-ELAN-FLEX-flextext-NEW-splitting-morpheme.R")
 eno_elicitation_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-binded.rds")
@@ -15,6 +16,8 @@ eno_morph_split1 <- eno_morph_split1 |>
   mutate(across(matches("^eno_phrase"), ~str_replace_all(., "\\s{2,}", " ")), 
          across(where(is.character), ~str_trim(., side = "both"))) |>
   mutate(text_title = str_replace_all(text_title, "(?<=^\\d\\d)_", "."))
+
+source("contemporary-enggano-interlinear-text/gloss_fixing.R")
 
 eno_example_references <- eno_elicitation_texts |> 
   select(text_title, phrase_id, phrase_line) |> 
@@ -34,9 +37,15 @@ eno_example_references <- eno_elicitation_texts |>
 # eno_morph_split1 <- eno_morph_split1 |> 
 #   left_join(eno_example_references)
 
-# filtering all non-NAs lex_entry
-lexs <- eno_morph_split1 |> 
+# Initial filtering
+flex_from_text <- eno_morph_split1 |>
+  
+  ## filtering all non-NAs lex_entry
   filter(if_all(matches("^lex_entry"), ~!is.na(.)), !is.na(word)) |> 
+  
+  ## filtering all questionable sentences (marked by "*" or "#")
+  filter(str_detect(eno_phrase, "^[*#]", negate = TRUE)) |> 
+  
   mutate(across(where(is.character), ~ replace(., is.na(.), ""))) |> 
   mutate(word_equal_lexentry = if_else(word == lex_entry, TRUE, FALSE),
          morph_equal_lexentry = if_else(morph == lex_entry, TRUE, FALSE))
@@ -64,13 +73,13 @@ eno_morph_split1 |>
          !is.na(eno_phrase_gloss_eng))
 
 # # test-case with 'ueh "sleep; lying down"
-# lexs |> 
+# flex_from_text |> 
 #   filter(lex_entry == "'ueh") |> 
 #   select(morph_gloss_en, morph_gloss_id, lex_entry) |> 
 #   distinct()
 # 
 # # trying to turn into SFM file
-# lexs1 <- lexs |> 
+# flex_from_text1 <- flex_from_text |> 
 #   select(lex_entry, homonym_id, morph_gram, everything()) |> 
 #   mutate(across(where(is.integer), as.character)) |> 
 #   mutate(lex_entry_dup = lex_entry,
@@ -94,7 +103,7 @@ eno_morph_split1 |>
 #                      "eno_word_pos",
 #                      "eno_word_gloss_en",
 #                      "eno_word_gloss_id")
-# lexs1 <- lexs1 |> filter(marker %in% marker_included)
+# flex_from_text1 <- flex_from_text1 |> filter(marker %in% marker_included)
 # marker_levels <-  c("lex_entry", 
 #                     # "variant",
 #                     "homonym_id",
@@ -110,22 +119,22 @@ eno_morph_split1 |>
 #                     "eno_word_gloss_en",
 #                     "eno_word_gloss_id")
 # markers <- data.frame(marker = marker_levels, mrk_id = 1:length(marker_levels))
-# lexs2 <- lexs1 |> left_join(markers)
-# lexs2 <- lexs1 |>
+# flex_from_text2 <- flex_from_text1 |> left_join(markers)
+# flex_from_text2 <- flex_from_text1 |>
 #   mutate(marker = factor(marker, levels = marker_levels))
 
 
 
-# lx <- lexs |> 
+# flex_from_text_mini <- flex_from_text |> 
 #   select(lex_entry, homonym_id, morph_gram, morph_gloss_en) |> 
 #   filter(lex_entry %in% c("-a", "bak", "ka-")) |> 
 #   distinct() |> 
 #   arrange(lex_entry, homonym_id) 
 
-lx <- lexs |> 
+flex_from_text_mini <- flex_from_text |> 
   select(lex_entry, homonym_id, morph_gloss_en, morph_gloss_id) |> 
   distinct()
-lx
+flex_from_text_mini
 
 flex_lexicon <- lu_form_df |> 
   select(entry_id,
@@ -152,17 +161,17 @@ flex_lexicon
 # check the unique grouping to determine the number of sense/gloss that
 # a given entry has
 flex_entry_sense_count <- flex_lexicon |> 
-  left_join(lx) |> 
+  left_join(flex_from_text_mini) |> 
   mutate(across(where(is.character), 
                 ~replace(., is.na(.), ""))) |> 
   group_by(entry_id, lex_entry, homonym_id, ps_key, etym, variant) |> 
-  summarise(n_sense = n_distinct(sense_order)) |> 
+  summarise(n_sense = n_distinct(sense_order), .groups = "drop") |> 
   arrange(desc(n_sense))
 flex_entry_sense_count
 
 # create the \sn column
 sn <- flex_lexicon |> 
-  left_join(lx) |> 
+  left_join(flex_from_text_mini) |> 
   mutate(across(where(is.character), 
                 ~replace(., is.na(.), ""))) |> 
   group_by(entry_id, lex_entry, homonym_id, ps_key, etym, variant) |> 
@@ -179,7 +188,7 @@ sn
 
 # create the \ge column
 ge <- flex_lexicon |> 
-  left_join(lx) |> 
+  left_join(flex_from_text_mini) |> 
   mutate(across(where(is.character), ~replace(., is.na(.), ""))) |> 
   group_by(entry_id, lex_entry, homonym_id, ps_key, etym) |> 
   mutate(ge_id = paste("ge_", sense_order, sep = "")) |> 
@@ -192,7 +201,7 @@ ge
 
 # create the \gn column
 gn <- flex_lexicon |> 
-  left_join(lx) |> 
+  left_join(flex_from_text_mini) |> 
   mutate(across(where(is.character), ~replace(., is.na(.), ""))) |> 
   group_by(entry_id, lex_entry, homonym_id, ps_key, etym) |> 
   mutate(gn_id = paste("gn_", sense_order, sep = "")) |> 
@@ -205,7 +214,7 @@ gn
 
 # create the \ps column
 ps <- flex_lexicon |> 
-  left_join(lx) |> 
+  left_join(flex_from_text_mini) |> 
   mutate(across(where(is.character), ~replace(., is.na(.), ""))) |> 
   group_by(entry_id, lex_entry, homonym_id, ps_key, etym) |> 
   mutate(ps_id = paste("ps_", sense_order, sep = "")) |> 
@@ -292,7 +301,7 @@ flex_lexicon2 <- lu_form_df |>
   # After running distinct, the total entry is 1524,
   # which is the number in the October 2023 FLEx pre-fieldwork
 
-lexs2 <- lexs |> 
+flex_from_text2 <- flex_from_text |> 
   select(lex_entry, 
          homonym_id,
          morph,
@@ -310,7 +319,7 @@ lexs2 <- lexs |>
   distinct()
 
 se <- flex_lexicon2 |> 
-  left_join(lexs2) |> 
+  left_join(flex_from_text2) |> 
   mutate(word = if_else(str_detect(sense_gram, "^Proper\\s+Noun$",
                                    negate = TRUE), 
                         tolower(word),
@@ -472,7 +481,7 @@ sn4 |>
 
 
 # Retrieving non-NAs `lex_entry` and `word`
-lexs <- eno_morph_split1 |> 
+flex_from_text <- eno_morph_split1 |> 
   filter(!is.na(lex_entry) & !is.na(word)) |> 
   mutate(across(where(is.character), ~ replace(., is.na(.), ""))) |> 
   mutate(word_equal_lexentry = if_else(word == lex_entry, TRUE, FALSE),
@@ -499,13 +508,21 @@ flex_lexicon2 <- lu_form_df |>
 
 
 sent <- flex_lexicon2 |> 
-  left_join(lexs |> select(-phrase_id)) |>
+  left_join(flex_from_text |> 
+              # remove phrase id/line to maintain uniqueness of the example text
+              # because there can be repetition across distinct phrase id
+              select(-phrase_id,
+                     -phrase_line)) |>
   mutate(word = if_else(str_detect(sense_gram, "^Proper\\s+Noun$",
                                    negate = TRUE), 
                         tolower(word),
                         word),
          across(where(is.character), ~replace(., is.na(.), "")),
          across(where(is.character), ~str_trim(., side = "both")),
+         across(matches("eno_phrase"), ~str_replace_all(., "\\bselus\\b", "Selus")),
+         across(matches("eno_phrase"), ~str_replace_all(., "\\bmaria\\b", "Maria")),
+         across(matches("eno_phrase"), ~str_replace_all(., "\\bali\\b", "Ali")),
+         across(matches("eno_phrase"), ~gsub("^(.)", "\\U\\1", x = ., perl = TRUE)),
          lx_equals_w = lex_entry == word,
          lx_equals_morph = lex_entry == morph,
          w_equals_morph = word == morph) |> 
@@ -514,18 +531,22 @@ sent <- flex_lexicon2 |>
 
 # get example for lex_entry that is the same with the word
 sent_root <- sent |> 
-  filter(lx_equals_w, eno_phrase_gloss_id != "") |> 
+  filter(lx_equals_w, 
+         eno_phrase_gloss_id != "",
+         # eno_phrase_gloss_eng != "",
+         lex_entry != eno_phrase) |> 
   select(-lx_equals_morph, -w_equals_morph) |> 
   group_by(entry_id, lex_entry, homonym_id, 
            sense_order, sense_gram) |> 
   # filter(lex_entry %in% "pakõ'õã'") |>
   # filter(lex_entry %in% tes_lex) |> 
-  distinct() |> 
+  distinct()
+sent_root_sample <- sent_root |> 
   slice_sample(n = 3)
 
 # retrieve the sentences for each language and then pivot_wider() for each lang.
 ## Enggano
-interim_eno <- sent_root |> 
+interim_eno <- sent_root_sample |> 
   # filter(lex_entry %in% tes_lex) |> 
   mutate(sent_eno_num = paste("sn", sense_order, "_xv", 
                               row_number(eno_phrase),
@@ -544,8 +565,28 @@ interim_eno_wide <- interim_eno |>
               values_fill = "") |> 
   distinct()
 
+### retrieve the source example reference
+interim_eno_ex_reference <- sent_root_sample |> 
+  mutate(sent_eno_num = paste("sn", sense_order, "_xv", 
+                              row_number(eno_phrase),
+                              sep = ""),
+         sent_idn_num = str_replace(sent_eno_num, "xv", "xn"),
+         sent_eng_num = str_replace(sent_eno_num, "xv", "xe"),
+         ref_eno_num = str_replace(sent_eno_num, "xv", "rf")) |> 
+  select(lex_entry, homonym_id, sense_order, sense_gram, 
+         morph_gloss_en, morph_gloss_id, etym, ref_eno_num, text_title) |> 
+  arrange(entry_id, lex_entry, homonym_id, sense_order, ref_eno_num) 
+
+interim_eno_ex_reference_wide <- interim_eno_ex_reference |> 
+  group_by(entry_id, lex_entry, homonym_id) |> 
+  select(-sense_order, -morph_gloss_en, -morph_gloss_id, -sense_gram) |> 
+  pivot_wider(names_from = ref_eno_num,
+              values_from = text_title,
+              values_fill = "") |> 
+  distinct()
+
 ## Indonesian
-interim_idn <- sent_root |> 
+interim_idn <- sent_root_sample |> 
   # filter(lex_entry %in% tes_lex) |> 
   mutate(sent_eno_num = paste("sn", sense_order, "_xv", 
                               row_number(eno_phrase),
@@ -565,7 +606,7 @@ interim_idn_wide <- interim_idn |>
   distinct()
 
 ## English
-interim_eng <- sent_root |> 
+interim_eng <- sent_root_sample |> 
   # filter(lex_entry %in% tes_lex) |> 
   mutate(sent_eno_num = paste("sn", sense_order, "_xv", 
                               row_number(eno_phrase),
@@ -586,7 +627,8 @@ interim_eng_wide <- interim_eng |>
 # combine the examples for the roots from the three languages
 sent_root1 <- interim_eno_wide |> 
   left_join(interim_idn_wide) |> 
-  left_join(interim_eng_wide) |> 
+  left_join(interim_eng_wide) |>
+  left_join(interim_eno_ex_reference_wide) |> 
   ungroup() |> 
   rename(lx = lex_entry,
          hm = homonym_id,
@@ -597,35 +639,66 @@ sent_root1 <- interim_eno_wide |>
          lx,
          hm,
          et,
+         
+         # Sense 1
+         ## example 1 for sense 1
          sn0_xv1,
          sn0_xn1,
          sn0_xe1,
+         sn0_rf1,
+         
+         ## example 2 for sense 1
          sn0_xv2,
          sn0_xn2,
          sn0_xe2,
+         sn0_rf2,
+         
+         ## example 3 for sense 1
          sn0_xv3,
          sn0_xn3,
          sn0_xe3,
+         sn0_rf3,
          
+         
+         # Sense 2
+         ## example 1 for sense 2
          sn1_xv1,
          sn1_xn1,
          sn1_xe1,
+         sn1_rf1,
+         
+         ## example 2 for sense 2
          sn1_xv2,
          sn1_xn2,
          sn1_xe2,
+         sn1_rf2,
+         
+         ## example 3 for sense 2
          sn1_xv3,
          sn1_xn3,
          sn1_xe3,
+         sn1_rf3,
          
+         
+         # Sense 3
+         ## example 1 for sense 3
          sn2_xv1,
          sn2_xn1,
          sn2_xe1,
+         sn2_rf1,
+         
+         ## example 2 for sense 3
          sn2_xv2,
          sn2_xn2,
          sn2_xe2,
+         sn2_rf2,
+         
+         ## example 3 for sense 3
          sn2_xv3,
          sn2_xn3,
-         sn2_xe3) |> 
+         sn2_xe3,
+         sn2_rf3) |> 
+  
   distinct()
 
 # combine the examples for the roots with `sn2` the three languages
@@ -635,19 +708,19 @@ sn2_1 <- sn2 |>
 sn2_2 <- sn2_1 |> 
   select(matches("va"), 
          sn_0, ps_0, ge_0, gn_0, 
-         sn0_xv1, sn0_xn1, sn0_xe1, 
-         sn0_xv2, sn0_xn2, sn0_xe2, 
-         sn0_xv3, sn0_xn3, sn0_xe3,  
+         sn0_xv1, sn0_xn1, sn0_xe1, sn0_rf1, 
+         sn0_xv2, sn0_xn2, sn0_xe2, sn0_rf2, 
+         sn0_xv3, sn0_xn3, sn0_xe3, sn0_rf3,  
          
          sn_1, ps_1, ge_1, gn_1, 
-         sn1_xv1, sn1_xn1, sn1_xe1, 
-         sn1_xv2, sn1_xn2, sn1_xe2, 
-         sn1_xv3, sn1_xn3, sn1_xe3, 
+         sn1_xv1, sn1_xn1, sn1_xe1, sn1_rf1, 
+         sn1_xv2, sn1_xn2, sn1_xe2, sn1_rf2, 
+         sn1_xv3, sn1_xn3, sn1_xe3, sn1_rf3, 
          
          sn_2, ps_2, ge_2, gn_2, 
-         sn2_xv1, sn2_xn1, sn2_xe1, 
-         sn2_xv2, sn2_xn2, sn2_xe2, 
-         sn2_xv3, sn2_xn3, sn2_xe3, 
+         sn2_xv1, sn2_xn1, sn2_xe1, sn2_rf1, 
+         sn2_xv2, sn2_xn2, sn2_xe2, sn2_rf2, 
+         sn2_xv3, sn2_xn3, sn2_xe3, sn2_rf3, 
          matches("se"))
 ## turn into a long table for SFM format
 sn2_3 <- sn2_2 |> 
@@ -724,7 +797,7 @@ sent_word
 sent_word_example_sample <- sent_word |> 
   select(entry_id, lex_entry, morph_type, homonym_id, etym, word, eno_word_gloss_id,
          eno_word_gloss_en, eno_word_pos, eno_phrase, eno_phrase_gloss_id,
-         eno_phrase_gloss_eng) |> 
+         eno_phrase_gloss_eng, text_title) |> 
   distinct() |> 
   group_by(entry_id, lex_entry, morph_type, homonym_id, etym, word, eno_word_pos,
            eno_word_gloss_id) |> 
@@ -735,7 +808,7 @@ sent_word_example_sample
 ## create the sense number for each word
 sent_word_sense_grouping <- sent_word_example_sample |> 
   group_by(entry_id, lex_entry, morph_type, homonym_id, etym, word) |> 
-  select(-matches("phrase|refs$")) |> 
+  select(-matches("phrase|refs$|text_title$")) |> 
   distinct() |> 
   mutate(sn_word = paste("snw_", row_number(eno_word_gloss_id)-1, sep = ""),
          sn_word_id = str_replace_all(sn_word, "snw_", ""),
@@ -743,32 +816,39 @@ sent_word_sense_grouping <- sent_word_example_sample |>
          ps_word_id = str_replace_all(ps_word, "^psw_", "")) |> 
   arrange(lex_entry, sn_word)
 sent_word_sense_grouping
-### re-join the sample examples dataset
+### re-join the sample examples datacset
 sent_word_example_sample_sn <- sent_word_example_sample |> 
   left_join(sent_word_sense_grouping)
 sent_word_example_sample_sn
 
-## create the IDs for the examples (and their glosses)
+nrow(sent_word_example_sample_sn) == nrow(sent_word_example_sample)
+
+## create the IDs for the examples (their glosses, and references)
 sent_word_example_sample_sn_ex <- sent_word_example_sample_sn |> 
   mutate(xv_word = paste("xvw_", row_number(eno_phrase)-1, sep = ""),
          xn_word = str_replace_all(xv_word, "^xv", "xn"),
-         xe_word = str_replace_all(xv_word, "^xv", "xe")) |> 
+         xe_word = str_replace_all(xv_word, "^xv", "xe"),
+         rf_word = str_replace_all(xv_word, "^xv", "rf")) |> 
   arrange(lex_entry, sn_word, xv_word)
 sent_word_example_sample_sn_ex
+nrow(sent_word_example_sample_sn_ex)
 
 ## create the IDs for the sub-entry forms of a lex_entry
 sent_word_example_sample_sn_ex_se <-  sent_word_example_sample_sn_ex |> 
   group_by(entry_id, lex_entry, morph_type, homonym_id, etym) |> 
-  select(-matches("phrase|refs|ps_|sn_|x._|gloss_(id|en)|word_pos")) |> 
+  select(-matches("phrase|refs|text_title|^rf|ps_|sn_|x._|gloss_(id|en)|word_pos")) |> 
   distinct() |> 
   mutate(se_w = paste("sew_", row_number(word)-1, sep = ""),
          se_w = str_replace_all(se_w, "(?<=_)(\\d)$", "0\\1")) |> 
   arrange(lex_entry, se_w)
 sent_word_example_sample_sn_ex_se
-### re-joining with the previous tibble
+nrow(sent_word_example_sample_sn_ex_se)
+
+### re-joining with the previous tibbles
 sent_word_example_sample_sn_ex_se1 <- sent_word_example_sample_sn_ex |> 
   left_join(sent_word_example_sample_sn_ex_se)
 sent_word_example_sample_sn_ex_se1
+nrow(sent_word_example_sample_sn_ex_se1) == nrow(sent_word_example_sample)
 
 
 
@@ -830,8 +910,8 @@ interim_word_eng_gloss <- sent_word_example_sample_sn_ex_se1 |>
               values_fill = "")
 dim(interim_word_eng_gloss)
 
-
-# pivot wider for the Enggano sentences
+# EXAMPLE SENTENCES (THEIR GLOSSES, and REFERENCES)
+## pivot wider for the Enggano sentences
 interim_word_eno_example <- sent_word_example_sample_sn_ex_se1 |> 
   mutate(sent_eno_num = paste(se_w, "__", sn_word, "__", xv_word, sep = "")) |> 
   group_by(entry_id, lex_entry, homonym_id, morph_type, etym) |> 
@@ -843,7 +923,19 @@ interim_word_eno_example <- sent_word_example_sample_sn_ex_se1 |>
               values_fill = "")
 dim(interim_word_eno_example)
 
-# pivot wider for the Indonesian sentences
+## pivot wider for the Enggano sentence references
+interim_word_eno_ex_sources <- sent_word_example_sample_sn_ex_se1 |> 
+  mutate(sent_eno_ref_num = paste(se_w, "__", sn_word, "__", rf_word, sep = "")) |> 
+  group_by(entry_id, lex_entry, homonym_id, morph_type, etym) |> 
+  select(sent_eno_ref_num, text_title) |> 
+  distinct() |> 
+  arrange(entry_id, lex_entry, homonym_id) |> 
+  pivot_wider(names_from = sent_eno_ref_num,
+              values_from = text_title,
+              values_fill = "")
+dim(interim_word_eno_ex_sources)
+
+## pivot wider for the Indonesian sentences
 interim_word_idn_example <- sent_word_example_sample_sn_ex_se1 |> 
   mutate(sent_idn_num = paste(se_w, "__", sn_word, "__", xn_word, sep = "")) |> 
   group_by(entry_id, lex_entry, homonym_id, morph_type, etym) |> 
@@ -876,6 +968,7 @@ word_subentry_examples <- interim_word_subentry |>
   left_join(interim_word_eno_example) |> 
   left_join(interim_word_idn_example) |> 
   left_join(interim_word_eng_example) |> 
+  left_join(interim_word_eno_ex_sources) |> 
   rename(lx = lex_entry,
          hm = homonym_id,
          et = etym) |> 
@@ -924,6 +1017,13 @@ xe_indices <- word_subentry_examples |>
   str_extract("(?<=xew_)\\d+$") |> 
   unique()
 
+rf_indices <- word_subentry_examples |> 
+  ungroup() |> 
+  select(matches("rfw_\\d+$")) |> 
+  colnames() |> 
+  str_extract("(?<=rfw_)\\d+$") |> 
+  unique()
+
 
 
 # > word_subentry_examples |> colnames() |> str_subset("^sew") |> str_extract("snw_\\d+") |> unique()
@@ -940,12 +1040,14 @@ xe_indices <- word_subentry_examples |>
 # [1] NA      "xnw_0" "xnw_1" "xnw_2"
 # > word_subentry_examples |> colnames() |> str_subset("^sew") |> str_extract("xew_\\d+") |> unique()
 # [1] NA      "xew_0" "xew_1" "xew_2"
+# > word_subentry_examples |> colnames() |> str_subset("^sew") |> str_extract("rfw_\\d+") |> unique()
+# [1] NA      "rfw_0" "rfw_1" "rfw_2"
 
 # > word_subentry_examples |> select(matches("^sew")) |> colnames() |> str_replace_all("\\d+", "") |> unique()
 # Adding missing grouping variables: `entry_id`, `lx`, `hm`, `morph_type`, `et`
 # [1] "entry_id"         "lx"               "hm"               "morph_type"       "et"              
 # [6] "sew_"             "sew___snw_"       "sew___psw_"       "sew___snw___gn"   "sew___snw___ge"  
-# [11] "sew___snw___xvw_" "sew___snw___xnw_" "sew___snw___xew_"
+# [11] "sew___snw___xvw_" "sew___snw___xnw_" "sew___snw___xew_" "sew___snw___rfw_"
 
 for (se in seq_along(subentries_colnames_id)) {
   
@@ -962,12 +1064,15 @@ for (se in seq_along(subentries_colnames_id)) {
            matches("snw_0__xvw_0$"),
            matches("snw_0__xnw_0$"),
            matches("snw_0__xew_0$"),
+           matches("snw_0__rfw_0$"),
            matches("snw_0__xvw_1$"),
            matches("snw_0__xnw_1$"),
            matches("snw_0__xew_1$"),
+           matches("snw_0__rfw_1$"),
            matches("snw_0__xvw_2$"),
            matches("snw_0__xnw_2$"),
            matches("snw_0__xew_2$"),
+           matches("snw_0__rfw_2$"),
            
            matches("snw_1$"),
            matches("psw_1$"),
@@ -976,12 +1081,15 @@ for (se in seq_along(subentries_colnames_id)) {
            matches("snw_1__xvw_0$"),
            matches("snw_1__xnw_0$"),
            matches("snw_1__xew_0$"),
+           matches("snw_1__rfw_0$"),
            matches("snw_1__xvw_1$"),
            matches("snw_1__xnw_1$"),
            matches("snw_1__xew_1$"),
+           matches("snw_1__rfw_1$"),
            matches("snw_1__xvw_2$"),
            matches("snw_1__xnw_2$"),
            matches("snw_1__xew_2$"),
+           matches("snw_1__rfw_2$"),
            
            matches("snw_2$"),
            matches("psw_2$"),
@@ -990,12 +1098,15 @@ for (se in seq_along(subentries_colnames_id)) {
            matches("snw_2__xvw_0$"),
            matches("snw_2__xnw_0$"),
            matches("snw_2__xew_0$"),
+           matches("snw_2__rfw_0$"),
            matches("snw_2__xvw_1$"),
            matches("snw_2__xnw_1$"),
            matches("snw_2__xew_1$"),
+           matches("snw_2__rfw_1$"),
            matches("snw_2__xvw_2$"),
            matches("snw_2__xnw_2$"),
            matches("snw_2__xew_2$"),
+           matches("snw_2__rfw_2$"),
            
            matches("snw_3$"),
            matches("psw_3$"),
@@ -1004,12 +1115,15 @@ for (se in seq_along(subentries_colnames_id)) {
            matches("snw_3__xvw_0$"),
            matches("snw_3__xnw_0$"),
            matches("snw_3__xew_0$"),
+           matches("snw_3__rfw_0$"),
            matches("snw_3__xvw_1$"),
            matches("snw_3__xnw_1$"),
            matches("snw_3__xew_1$"),
+           matches("snw_3__rfw_1$"),
            matches("snw_3__xvw_2$"),
            matches("snw_3__xnw_2$"),
-           matches("snw_3__xew_2$")
+           matches("snw_3__xew_2$"),
+           matches("snw_3__rfw_2$")
     )
   
   subentries_main_df <- left_join(subentries_main_df, interim_df1)
@@ -1146,6 +1260,29 @@ word_subentry_examples4 <- word_subentry_examples3 |>
   # delete empty marker
   filter(vals != "") |>
   
+  # edit the vals for the part of speech
+  mutate(vals = replace(vals, vals %in% c("adj"), "Adjective"),
+         vals = replace(vals, vals %in% c("adv"), "Adverb"),
+         vals = replace(vals, vals %in% c("aux"), "Auxiliary"),
+         vals = replace(vals, vals %in% c("clf"), "Classifier"),
+         vals = replace(vals, vals %in% c("coordconn"), "Coordinating connective"),
+         vals = replace(vals, vals %in% c("dem"), "Demonstrative"),
+         vals = replace(vals, vals %in% c("interj"), "Interjection"),
+         vals = replace(vals, vals %in% c("interog"), "Interrogative pro-form"),
+         vals = replace(vals, vals %in% c("n"), "Noun"),
+         vals = replace(vals, vals %in% c("neg", "negation"), "Negation"),
+         vals = replace(vals, vals %in% c("nprop"), "Proper Noun"),
+         vals = replace(vals, vals %in% c("num"), "Numeral"),
+         vals = replace(vals, vals %in% c("prep"), "Preposition"),
+         vals = replace(vals, vals %in% c("pro-adv"), "Pro-adverb"),
+         vals = replace(vals, vals %in% c("pro-form"), "Pro-form"),
+         vals = replace(vals, vals %in% c("pro"), "Pronoun"),
+         vals = replace(vals, vals %in% c("prt"), "Particle"),
+         vals = replace(vals, vals %in% c("quant"), "Quantifier"),
+         vals = replace(vals, vals %in% c("rel"), "Relativizer"),
+         vals = replace(vals, vals %in% c("subordconn"), "Subordinating connective"),
+         vals = replace(vals, vals %in% c("v"), "Verb")) |> 
+  
   # edit the marker for the sub-entries
   mutate(marker_deleted = str_replace_all(marker, "^sew_+\\d\\d$", "se"),
          marker_deleted = str_replace_all(marker_deleted, "^sew_+\\d+_+snw_+\\d+$", "sn"),
@@ -1154,7 +1291,8 @@ word_subentry_examples4 <- word_subentry_examples3 |>
          marker_deleted = str_replace_all(marker_deleted, "^.+ge$", "ge"),
          marker_deleted = str_replace_all(marker_deleted, "^.+xvw.+", "xv"),
          marker_deleted = str_replace_all(marker_deleted, "^.+xnw.+", "xn"),
-         marker_deleted = str_replace_all(marker_deleted, "^.+xew.+", "xe")) |> 
+         marker_deleted = str_replace_all(marker_deleted, "^.+xew.+", "xe"),
+         marker_deleted = str_replace_all(marker_deleted, "^.+rfw.+", "rf")) |> 
   
   # create a new marker without number
   mutate(marker_deleted = str_replace_all(marker_deleted, "_\\d+$", ""),
@@ -1177,7 +1315,8 @@ word_subentry_examples4 <- word_subentry_examples3 |>
 word_subentry_examples4 |>
   # filter(lx_key %in% tes_lex) |>
   pull(sfm) |>
-  write_lines("FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples.db")
+  # write_lines("FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples.db")
+  write_lines("FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples-with-references.db")
 
 
 
@@ -1368,7 +1507,7 @@ word_subentry_examples4 |>
 # lu_form_df |> 
 #   filter(form %in% sn1$lx) |> 
 #   select(lex_entry = form, homonym_id = order, sense_order, morph_gloss_en = sense_gloss_en, sense_gram) |> 
-#   left_join(lx) |> 
+#   left_join(flex_from_text_mini) |> 
 #   mutate(sense_order = replace(sense_order, is.na(sense_order), "0")) |> 
 #   group_by(lex_entry, homonym_id, sense_gram) |> 
 #   mutate(sense_id = paste("sn_", sense_order, sep = "")) |> 
@@ -1380,7 +1519,7 @@ word_subentry_examples4 |>
 # lu_form_df |> 
 #   filter(form %in% sn1$lx) |> 
 #   select(lex_entry = form, homonym_id = order, sense_order, morph_gloss_en = sense_gloss_en, sense_gram) |> 
-#   left_join(lx) |> 
+#   left_join(flex_from_text_mini) |> 
 #   mutate(sense_order = replace(sense_order, is.na(sense_order), "0")) |> 
 #   group_by(lex_entry, homonym_id, sense_gram) |> 
 #   mutate(ge_id = paste("ge_", sense_order, sep = "")) |> 
@@ -1392,7 +1531,7 @@ word_subentry_examples4 |>
 # lu_form_df |> 
 #   filter(form %in% sn1$lx) |> 
 #   select(lex_entry = form, homonym_id = order, sense_order, morph_gloss_id = sense_gloss_idn, sense_gram) |> 
-#   left_join(lexs |> 
+#   left_join(flex_from_text |> 
 #               select(lex_entry, homonym_id, morph_gram, morph_gloss_id) |> 
 #               filter(lex_entry %in% c("-a", "bak", "ka-")) |> 
 #               distinct() |> 
@@ -1411,7 +1550,7 @@ word_subentry_examples4 |>
 
 
 # get the number of sense per group of lex, hom, and lex.pos
-# sn <- lx |> 
+# sn <- flex_from_text_mini |> 
 #   group_by(lex_entry, homonym_id, morph_gram) |> 
 #   mutate(rn = as.character(row_number(lex_entry)-1)) |>
 #   mutate(sense_id = paste("sn_", rn, sep = "")) |> 
@@ -1424,7 +1563,7 @@ word_subentry_examples4 |>
 #               values_fill = "") |> 
 #   ungroup()
 # 
-# ge <- lx |> 
+# ge <- flex_from_text_mini |> 
 #   group_by(lex_entry, homonym_id, morph_gram) |> 
 #   mutate(rn = as.character(row_number(lex_entry)-1)) |>
 #   mutate(gloss_id = paste("ge_", rn, sep = "")) |> 
@@ -1437,7 +1576,7 @@ word_subentry_examples4 |>
 #               values_fill = "") |> 
 #   ungroup()
 # 
-# gn <- lexs |> 
+# gn <- flex_from_text |> 
 #   select(lex_entry, homonym_id, morph_gram, morph_gloss_id) |> 
 #   filter(lex_entry %in% c("-a", "bak", "ka-")) |> 
 #   distinct() |> 
@@ -1457,7 +1596,7 @@ word_subentry_examples4 |>
 #               values_fill = "") |> 
 #   ungroup()
 # 
-# ps <- lx |> 
+# ps <- flex_from_text_mini |> 
 #   group_by(lex_entry, homonym_id, morph_gram) |> 
 #   mutate(rn = as.character(row_number(lex_entry)-1)) |>
 #   mutate(ps_id = paste("ps_", rn, sep = "")) |> 
@@ -1491,7 +1630,7 @@ word_subentry_examples4 |>
 #          gn_2)
 # sn1
 
-# lexs3 <- lexs |> 
+# lexs3 <- flex_from_text |> 
 #   select(eno_word_id, lex_entry, homonym_id, 
 #          morph_gram, morph_type, word, eno_word_gloss_id,
 #          eno_word_gloss_en, eno_word_pos,
