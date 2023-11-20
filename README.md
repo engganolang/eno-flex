@@ -16,8 +16,8 @@ alt="Faculty of Linguistics, Philology and Phonetics, the University of Oxford" 
 [<img src="file-ahrc.png" width="325"
 alt="Arts and Humanities Research Council (AHRC)" />](https://www.ukri.org/councils/ahrc/)
 </br>*This work is part of the [AHRC-funded
-project](https://gtr.ukri.org/project/8AB0C3DC-F1C9-4CFA-BB4D-5BE748213372)
-on the lexical resources for Enggano, led by the Faculty of Linguistics,
+project](https://app.dimensions.ai/details/grant/grant.12915105) on the
+lexical resources for Enggano, led by the Faculty of Linguistics,
 Philology and Phonetics at the University of Oxford, UK. Visit the
 [central webpage of the Enggano
 project](https://enggano.ling-phil.ox.ac.uk/)*. <!-- badges: end -->
