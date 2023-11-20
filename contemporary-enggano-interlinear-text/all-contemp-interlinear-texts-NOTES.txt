@@ -19,3 +19,56 @@ needs to be change to "id"
 	- move the "whose child is naughty" to the free translation of 114.1
 
 3. "saya tidak melihat dia tadi", "saya tidak dilihatnya'" needs to be changed to "id" from "eno"
+
+
+# bulk processing the complex form type
+
+0. Show the "Variant of" column and "Complex Form Type" column
+
+1. First, filter the headword by regex to see two-lexemes form using: ^[^ ]+\s[^ ]+
+
+	1.1. then, in the Complex form type column, filter by "Non-blanks"
+	1.1.1 then, change "dak tau nya" and "tau nya" into "compound"
+	1.1.2 change "tarian perang" into "compound"
+	1.1.3 change "epuru umde", "puru ub" into "derivative"
+	1.1.4 change "kak tuo'", "kak tuode" into "derivative"
+	1.1.5 change "bak kaha'1" into "compound" and add "kaha'1" with the specific sense '1 n day' as the component
+	1.1.6 change "bak kaha'3" into "compound" and add "bak1" with the specific sense '1 n eye' as the component
+	
+2. Second, filter the reduplicated form using regex: ^[^-]{2,}[-][^-]{2,}$
+
+	2.1. then go to "Bulk Edit Entries" under the "List Choice" tab
+	2.2. target field is "Complex Form Types" and change that into "Derivative" and check "Replace existing items"
+	2.3. click "Preview". Inspect, then, if OK, click "Apply".
+
+3. Third, filter the remaining "Unspecified Complex Form"
+
+	3.1. Test filter the Headword if there is any whitespace using regex \s (output: empty)
+	3.2. Test filter the Headword with regex for punctuation dash \- to see the remaining reduplicated form (output: there are still some!)
+		
+		3.2.1 Bulk edit the complex form type of these reduplicated form following step 2 above
+		
+	3.3. Go back to the "Unspecified Complex Form" filter in step 3.
+	3.4. Filter the punctuation of exclamation mark (no regex/normal search with: ǃ) (see 3.4.1 below)
+		
+		3.4.1. Change "a'noke!", "a'nokea!", "na'a!", and "pua!" into "Derivative"
+			(for the next step, better directly filter these words using regex) 
+			(NEED TO COPY-AND-PASTE THE ABOVE EXCLAMATION MARK TO GET A MATCH!)
+			(regex: a'nokea?ǃ|na'aǃ|puaǃ) <- this regex works
+		3.4.2. Bulk edit entries these words into "Derivative"
+
+4. Fourth, filter for the remaining "Unspecified Complex Form"
+
+		4.1. Filter the Headword that:
+			- has NO exclamation mark
+			- has not begun with capital letter
+			- has two or more characters 
+			(copy this regex: ^[^A-Z]{2,}[^ǃ]$ then check "Mark case")
+		4.2. Bulk Edit Entries the Complex Form Types of these headwords into Derivative
+
+5. Fifth, following the above four procedures, the remaining "Unspecified Complex Form" types are only 30 items! More managable!
+
+	5.1. change "du" 'said' into "Derivative" of "'u"
+	5.2. change "Ekano2" into "Derivative" of "Kano"
+	5.3. change "yi" 'existence' into "Derivative" of "i1"
+	5.4. keep headwords that appear to be variant of the lexical entry
