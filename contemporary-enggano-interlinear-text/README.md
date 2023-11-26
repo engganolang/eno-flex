@@ -99,3 +99,26 @@ lu_form_df |>
 #> 10 3729b50e-750d-4c31-9b19-67e… ahao  1           "forbid"       <NA>           
 #> # ℹ 111 more rows
 ```
+
+## On sub-entries
+
+### Sub-entries type
+
+1.  The SFM can include custom marker indicating the specific type of
+    the sub-entries.
+
+2.  In the new FLEx project, set up the corresponding specific sub-entry
+    types in the List for “Complex Form Types”.
+
+    1.  This specific sub-entry type is given in the Name and
+        Abbreviation fields.
+
+    2.  The Reverse Name and Reverse Abbr. of the specific sub-entry
+        type is also prepared in the FLEx List.
+
+3.  Finally, in the mapping during import, I will only specify the
+    specific sub-entry types with the custom marker, without the need to
+    create marker for the Reverse Name and Reverse Abbr.
+
+4.  **TO DO**: prepare the list of the relevant complex form types for
+    matching between SFM Marker and FLEx List.
