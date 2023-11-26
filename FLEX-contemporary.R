@@ -1,3 +1,5 @@
+# This is code used to extract data from .lift FLEx Lexicon before the entries are given example sentences (i.e., the August meeting version)
+
 library(tidyverse)
 library(xml2)
 library(googledrive)
