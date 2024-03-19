@@ -4,7 +4,7 @@
 library(tidyverse)
 library(xml2)
 
-flexdb <- read_xml("FLEX.lift") # pre-fieldwork version (October, 11th, 2023)
+flexdb <- read_xml("FLEX.lift") # March Project Meeting (March, 19th, 2024)
 
 # MAIN ENTRY ======
 
@@ -345,7 +345,8 @@ lu_form_df <- lu_form_df |>
 # notes_text_df
 
 
-write_rds(lu_form_df, "FLEX-lift-pre-fieldwork.rds")
+# write_rds(lu_form_df, "FLEX-lift-pre-fieldwork.rds")
+write_rds(lu_form_df, "FLEX-lift-march-2024.rds")
 
 
 
