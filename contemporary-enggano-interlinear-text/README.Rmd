@@ -58,7 +58,6 @@ The codes to process the .flextext export data need to be run in the order given
 
 ## The exported .lift data from FLEx `Lexicon`
 
-
 The latest, exported `Lexicon` data based on the code file [FLEX-contemporary-with-examples-new.R](https://github.com/engganolang/eno-flex/blob/main/FLEX-contemporary-with-examples-new.R) (pre- and post-October-2023 fieldwork called `FLEX-lift-pre-fieldwork.rds`, or the March 2024 version called `FLEX-lift-march-2024.rds`) contains some example sentences for certain lexical entries. This leads to the presence of duplicated observation in `FLEX-lift-pre-fieldwork.rds`/`FLEX-lift-march-2024.rds` (to be read into R as `lu_form_df` tibble). The example sentences are contained in the `"x_eno"`, `"x_idn"`, and `"x_eng"` columns of the `lu_form_df`.
 
 Even though the `x_...` columns for example sentences have been excluded and then the `distinct()` function has been run, there are still duplicates due to the presence of multiple senses of a given lexical entry. These multiple senses (shown in the `"sense_gloss_en"` and/or `"sense_gloss_idn"` column of the `lu_form_df` tibble) are represented into different rows. The example is *ueh* that is glossed as 'sleep' and 'lie'. Hence, *ueh* has two entries/rows in `lu_form_df`.
