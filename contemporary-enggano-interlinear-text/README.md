@@ -178,6 +178,14 @@ lu_form_df |>
 #> # ℹ 111 more rows
 ```
 
+## On `eno_word_id`
+
+- The same word form may have different `eno_word_id` because this same
+  word form comes from different texts!
+
+- For example, the word “kapa’ueh” ‘put; lay down’ has three unique IDs
+  because these three IDs are coming from three different texts.
+
 ## On sub-entries
 
 ### Sub-entries type
@@ -198,5 +206,5 @@ lu_form_df |>
     specific sub-entry types with the custom marker, without the need to
     create marker for the Reverse Name and Reverse Abbr.
 
-4.  **TO DO**: prepare the list of the relevant complex form types for
-    matching between SFM Marker and FLEx List.
+4.  **TO DO (DONE)**: prepare the list of the relevant complex form
+    types for matching between SFM Marker and FLEx List. (DONE)
