@@ -1,4 +1,4 @@
-# to generate data for Pak Cok's system, run the codes in "...flextext-NEW-SFM.R" from line 10 until line 325
+# to generate data for Pak Cok's system, run the codes in "...flextext-NEW-SFM.R" from line 10 until line 325. Then run the following codes from line 2 to 133.
 library(stringi)
 flex_from_text1 <- flex_from_text |> 
   mutate(homonym_id = replace(homonym_id, homonym_id == "", "0")) |> 
@@ -606,10 +606,11 @@ to_show_to_pak_cok_team <- lex10 |>
 
 ## debugging for the no-root-word-id ==========
 no_root_word_id <- readxl::read_xlsx("no_root_word_id.xlsx")
+no_root_word_id_rgx <- paste("(", paste(unique(no_root_word_id$root_word_id), collapse = "|"), ")", sep = "")
 
 
 ### TRIAL CODE FOR DEBUGGING =====
-#### run the code above from line 1 until line 133
+#### run the code above from line 2 until line 133
 
 #### Work out later how to capture lexical entry "buh" as prefix and as stem because the prefix and stem morphemes of "buh" are put under the same lexical entry "buh".
 
@@ -734,17 +735,18 @@ prefix_and_suffix_dbase <- lex5 |>
   filter(morph_type %in% c("prefix", "suffix"))
 
 wordsdb <- lex5 |> 
+  mutate(word_equal_lexentry = replace(word_equal_lexentry,
+                                       is.na(root_word_id) &
+                                         word == lex_entry,
+                                       TRUE)) |> 
+  mutate(across(where(is.character), ~replace_na(., ""))) |> 
   filter(!morph_type %in% c("prefix", "suffix", "root")) |> 
   ### exclude example sentences that contain "*", "?", and/or "#"
   filter(str_detect(eno_phrase, "(^[*#?]|^[*]\\/[#])", negate = TRUE)) |> 
   ### exclude example sentences that contain "xxx"
   filter(str_detect(eno_phrase, "\\b(?i)x{2,}", negate = TRUE)) |> 
   filter(str_detect(eno_phrase_gloss_eng, "\\b(?i)x{2,}", negate = TRUE)) |>
-  filter(str_detect(eno_phrase_gloss_id, "\\b(?i)x{2,}", negate = TRUE)) |> 
-  mutate(word_equal_lexentry = replace(word_equal_lexentry,
-                                       is.na(root_word_id) &
-                                         word == lex_entry,
-                                       TRUE))
+  filter(str_detect(eno_phrase_gloss_id, "\\b(?i)x{2,}", negate = TRUE))
 
 ##### combine the directly added lexicon with those from the texts
 
@@ -1046,8 +1048,7 @@ wordsdb4 <- wordsdb3 |>
                               "Verb suffix"),
          english = str_replace_all(english, "\\s+", " "),
          english = str_trim(english, side = "both")
-         ) |> 
-  mutate(across(where(is.character), ~replace_na(., "")))
+         )
 
 ##### keep sense order for the ROOT for now (based on sense order in LEXICON)
 wordsdb5 <- wordsdb4 |> 
@@ -1138,16 +1139,13 @@ to_show_pak_cok_team <- wordsdb6 |>
          root_variant_form = variant, 
          root_etymology = etym, 
          root_meaning_order = sense_order, 
-         root_homonym_id = homonym_id) |> 
-  select(-ex_ID) |> 
-  distinct()
+         root_homonym_id = homonym_id)
 
-googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE",
-                           sheet = "to_show_pak_cok_team")
+# googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team")
 
 
-
-
+root_id <- unique(to_show_pak_cok_team$word_id)
+length(str_subset(root_id, no_root_word_id_rgx)) == length(unique(no_root_word_id$root_word_id))
 
 
 
