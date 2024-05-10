@@ -132,6 +132,8 @@ lex <- flex_from_text1 |>
   distinct()
 nrow(lex)
 
+## OLD CODES - begin ====
+
 lex1 <- flex_lexicon1 |> 
   select(-ps_key) |> 
   mutate(lexicon_id = entry_id) |> 
@@ -603,13 +605,14 @@ to_show_to_pak_cok_team <- lex10 |>
 #   filter(!word_equal_lexentry) |> 
 #   mutate(data_set = "word_different_from_lexentry")
 
+## OLD CODES - end ====
 
-## debugging for the no-root-word-id ==========
+# 4. debugging for the no-root-word-id ==========
 no_root_word_id <- readxl::read_xlsx("no_root_word_id.xlsx")
 no_root_word_id_rgx <- paste("(", paste(unique(no_root_word_id$root_word_id), collapse = "|"), ")", sep = "")
 
 
-### TRIAL CODE FOR DEBUGGING =====
+## TRIAL CODE FOR DEBUGGING =====
 #### run the code above from line 2 until line 133
 
 #### Work out later how to capture lexical entry "buh" as prefix and as stem because the prefix and stem morphemes of "buh" are put under the same lexical entry "buh".
@@ -699,7 +702,7 @@ lex4 <- lex3 |>
   bind_rows(y) |> 
   mutate(word_type = "")
 
-#### identify `word` that acts as the root form ====
+### identify `word` that acts as the root form ====
 lex5 <- lex4 |> 
   mutate(word_type = replace(word_type,
                              is.na(root_word_id) & sources == "lexicon",
@@ -741,12 +744,24 @@ wordsdb <- lex5 |>
                                        TRUE)) |> 
   mutate(across(where(is.character), ~replace_na(., ""))) |> 
   filter(!morph_type %in% c("prefix", "suffix", "root")) |> 
-  ### exclude example sentences that contain "*", "?", and/or "#"
-  filter(str_detect(eno_phrase, "(^[*#?]|^[*]\\/[#])", negate = TRUE)) |> 
-  ### exclude example sentences that contain "xxx"
-  filter(str_detect(eno_phrase, "\\b(?i)x{2,}", negate = TRUE)) |> 
-  filter(str_detect(eno_phrase_gloss_eng, "\\b(?i)x{2,}", negate = TRUE)) |>
-  filter(str_detect(eno_phrase_gloss_id, "\\b(?i)x{2,}", negate = TRUE))
+  mutate(ex_eno_removed = if_else(str_detect(eno_phrase, "(^[*#?]|^[*]\\/[#]|\\b(?i)x{2,})", negate = FALSE),
+                                  TRUE,
+                                  FALSE),
+         ex_idn_removed = if_else(str_detect(eno_phrase_gloss_id, "\\b(?i)x{2,}", negate = FALSE),
+                                  TRUE,
+                                  FALSE),
+         ex_eng_removed = if_else(str_detect(eno_phrase_gloss_eng, "\\b(?i)x{2,}", negate = FALSE),
+                                  TRUE,
+                                  FALSE),
+         ex_idn_removed = if_else(ex_eno_removed, TRUE, ex_idn_removed),
+         ex_eng_removed = if_else(ex_eno_removed, TRUE, ex_eng_removed))
+  # 
+  # ### exclude example sentences that contain "*", "?", and/or "#"
+  # filter(str_detect(eno_phrase, "(^[*#?]|^[*]\\/[#])", negate = TRUE)) |> 
+  # ### exclude example sentences that contain "xxx"
+  # filter(str_detect(eno_phrase, "\\b(?i)x{2,}", negate = TRUE)) |> 
+  # filter(str_detect(eno_phrase_gloss_eng, "\\b(?i)x{2,}", negate = TRUE)) |>
+  # filter(str_detect(eno_phrase_gloss_id, "\\b(?i)x{2,}", negate = TRUE))
 
 ##### combine the directly added lexicon with those from the texts
 
@@ -799,7 +814,10 @@ wordsdb2 <- wordsdb1 |>
          ex_idn = eno_phrase_gloss_id, 
          ex_eng = eno_phrase_gloss_eng, 
          text_title, 
-         sources) |> 
+         sources,
+         ex_eno_removed,
+         ex_idn_removed,
+         ex_eng_removed) |> 
   distinct()
 ##### keep only homonym ID for the word that is 'root'
 wordsdb3 <- wordsdb2 |> 
@@ -1129,7 +1147,7 @@ wordsdb6 <- wordsdb5 |>
                           ex_idn)) |> 
   select(-ex_eng_deepl, -ex_idn_deepl) |> 
   ### exclude example sentences containing the "FOR" in the English translation
-  filter(str_detect(ex_eng, "^FOR", TRUE))
+  filter(str_detect(ex_eng, "^FOR", negate = TRUE))
 
 
 
@@ -1139,9 +1157,18 @@ to_show_pak_cok_team <- wordsdb6 |>
          root_variant_form = variant, 
          root_etymology = etym, 
          root_meaning_order = sense_order, 
-         root_homonym_id = homonym_id)
+         root_homonym_id = homonym_id) |> 
+  mutate(ex_eno_removed = if_else(ex_idn == "" & ex_eng == "",
+                                  TRUE,
+                                  ex_eno_removed),
+         ex_idn_removed = if_else(ex_eno_removed,
+                                  TRUE,
+                                  ex_idn_removed),
+         ex_eng_removed = if_else(ex_eno_removed,
+                                  TRUE,
+                                  ex_eng_removed))
 
-# googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team")
+googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_new")
 
 
 root_id <- unique(to_show_pak_cok_team$word_id)
