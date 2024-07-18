@@ -3,8 +3,10 @@ library(tidyverse)
 # processing the collapsed morphemes and re-joining them with the words
 
 ## read the saved tibble
-eno_file_text <- "contemporary-enggano-interlinear-text/eno_contemp_text_as_tibble-new.rds"
-eno_file_elicit <- "contemporary-enggano-interlinear-text/eno_contemp_elicitation_as_tibble-new.rds"
+# eno_file_text <- "contemporary-enggano-interlinear-text/eno_contemp_text_as_tibble-new.rds"
+eno_file_text <- "contemporary-enggano-interlinear-text/eno_contemp_text_as_tibble-new-march2024.rds"
+# eno_file_elicit <- "contemporary-enggano-interlinear-text/eno_contemp_elicitation_as_tibble-new.rds"
+eno_file_elicit <- "contemporary-enggano-interlinear-text/eno_contemp_elicitation_as_tibble-new-march2024.rds"
 
 eno <- read_rds(eno_file_text) |> 
   list_rbind()
