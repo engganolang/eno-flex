@@ -1,4 +1,4 @@
-# to generate data for Pak Cok's system, run the codes in "...flextext-NEW-SFM.R" from line 10 until line 325. Then run the following codes from line 2 to 133.
+# To generate data for Pak Cok's system, run the codes in "...flextext-NEW-SFM.R" from line 10 until line 325. Then run the following codes from line 2 to 133. Then skip over the codes inside "OLD CODES" and go to section 4. debuging
 library(stringi)
 flex_from_text1 <- flex_from_text |> 
   mutate(homonym_id = replace(homonym_id, homonym_id == "", "0")) |> 
@@ -132,7 +132,7 @@ lex <- flex_from_text1 |>
   distinct()
 nrow(lex)
 
-## OLD CODES - begin ====
+## OLD CODES below - begin ====
 
 lex1 <- flex_lexicon1 |> 
   select(-ps_key) |> 
@@ -605,7 +605,7 @@ to_show_to_pak_cok_team <- lex10 |>
 #   filter(!word_equal_lexentry) |> 
 #   mutate(data_set = "word_different_from_lexentry")
 
-## OLD CODES - end ====
+## OLD CODES above - end ====
 
 # 4. debugging for the no-root-word-id ==========
 no_root_word_id <- readxl::read_xlsx("no_root_word_id.xlsx")
@@ -1149,8 +1149,6 @@ wordsdb6 <- wordsdb5 |>
   ### exclude example sentences containing the "FOR" in the English translation
   filter(str_detect(ex_eng, "^FOR", negate = TRUE))
 
-
-
 to_show_pak_cok_team <- wordsdb6 |> 
   rename(word_id = id, 
          root = lex_entry, 
@@ -1166,9 +1164,41 @@ to_show_pak_cok_team <- wordsdb6 |>
                                   ex_idn_removed),
          ex_eng_removed = if_else(ex_eno_removed,
                                   TRUE,
-                                  ex_eng_removed))
+                                  ex_eng_removed)) |> 
+  # remove number entries
+  filter(str_detect(word, "^[0-9]+$", negate = TRUE))
 
-googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_new")
+
+## save entries marked with Indonesian loan to be manually coded which entry of Indonesian loan to include
+# to_show_pak_cok_team |> 
+#   count(word, english, indonesian, root_etymology, sort = TRUE) |> 
+#   filter(str_detect(root_etymology, "Indones", FALSE)) |> 
+#   writexl::write_xlsx("indonesian_loan.xlsx")
+
+## load back the entries with Indonesian loan to be used to filtered out the relevant Indonesian loan
+idn_loan_excl <- readxl::read_xlsx("indonesian_loan.xlsx") |> 
+  filter(excluded == "y")
+
+
+# Fix the Indonesian loan into just loanwords, but first, exclude the excluded loanwords
+to_show_pak_cok_team <- to_show_pak_cok_team |> 
+  
+  # exclude loan word
+  filter(!word %in% idn_loan_excl$word) |> 
+  
+  mutate(root_etymology = replace(root_etymology,
+                                  str_detect(root_etymology, "Indonesian"),
+                                  "loanwords"))
+
+# get the total entries for the FLEx database for EnoLEX proceeding to be put in Table 1.
+# the total entries here are unique combination of the word column (which captures root form and complex form), root column, and homonym_id
+to_show_pak_cok_team |> 
+  select(word, root, root_homonym_id) |> 
+  distinct() |> 
+  nrow()
+
+# BELOW IS THE CODE TO SAVE THE DATABASE TO GOOGLE SHEET TO SHARE TO PAK COK's TEAM
+# googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_new")
 
 
 root_id <- unique(to_show_pak_cok_team$word_id)

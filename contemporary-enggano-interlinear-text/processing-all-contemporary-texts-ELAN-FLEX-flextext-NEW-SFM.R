@@ -12,8 +12,10 @@ library(tidyverse)
 # lu_form_df <- read_rds("FLEX-lift-pre-fieldwork.rds")
 lu_form_df <- read_rds("FLEX-lift-march-2024.rds")
 source("contemporary-enggano-interlinear-text/processing-all-contemporary-texts-ELAN-FLEX-flextext-NEW-splitting-morpheme.R")
-eno_elicitation_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-binded.rds")
-eno_natural_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded.rds")
+# eno_elicitation_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-binded.rds")
+eno_elicitation_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-binded-march2024.rds")
+# eno_natural_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded.rds")
+eno_natural_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded-march2024.rds")
 
 # list of proper name to exclude from the entries
 person_entries <- c("Ga", "Engga", "Gede", "Charlotte", "Bill",
@@ -303,7 +305,7 @@ flex_lexicon <- lu_form_df |>
   distinct()
   # We need to run distinct() above...
   # because there are entries that are multiplied due to the presence of
-  # sentence example.
+  # sentence example (which is excluded from `flex_lexicon` because that sentence example will be taken from the interlinear text table (`flex_from_text`).
 
 flex_lexicon
   # After running distinct, 
@@ -472,7 +474,7 @@ sn1 <- sn |> # join the \sn (Sense number) and \va (Allomorph) tibble with ...
 ## - morph_gram
 ## - etym of the root, and 
 ## - variant (before parsed)
-# tes_lex <- c("pe", "abė", "bak", "kahinu", "a", 
+# tes_lex <- c("pe", "abė", "bak", "kahinu", "a",
 #              "arkih", "anu̇k", "yũ'ũ",
 #              "pakõ'õã'")
 
@@ -1456,9 +1458,13 @@ word_subentry_examples4 <- word_subentry_examples3 |>
                        sfm))
 
 ## save into SFM plain text ======
-word_subentry_examples4 # |>
+word_subentry_examples4 |>
+  # exclude number entry
+  filter(str_detect(lx_key, "^[0-9]+$", TRUE)) # |> 
+  # pull(sfm) |> 
   # filter(lx_key %in% tes_lex) |>
   # write_lines("FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples.db")
+  # write_lines("FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples-2024-07-17.db")
 
 
 
