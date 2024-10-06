@@ -1,12 +1,24 @@
+My personal notes on processing the .lift and .flextext exported data
+================
 [Gede Primahadi Wijaya
 Rajeg](https://www.ling-phil.ox.ac.uk/people/gede-rajeg)
 <a itemprop="sameAs" content="https://orcid.org/0000-0002-2047-8621" href="https://orcid.org/0000-0002-2047-8621" target="orcid.widget" rel="noopener noreferrer" style="vertical-align:top;"><img src="https://orcid.org/sites/default/files/images/orcid_16x16.png" style="width:1em;margin-right:.5em;" alt="ORCID iD icon"></a><br>University
 of Oxford, UK & Universitas Udayana, Indonesia
 
+- [Code file for processing the exported .lift data from FLEx
+  `Lexicon`](#code-file-for-processing-the-exported-lift-data-from-flex-lexicon)
+- [Code files for processing the exported .flextext data from FLEx
+  interlinear text in
+  `Texts and Words`](#code-files-for-processing-the-exported-flextext-data-from-flex-interlinear-text-in-texts-and-words)
+- [The exported .lift data from FLEx
+  `Lexicon`](#the-exported-lift-data-from-flex-lexicon)
+- [On `eno_word_id`](#on-eno_word_id)
+- [Textbook materials](#textbook-materials)
+  - [Processing steps](#processing-steps)
+- [On sub-entries](#on-sub-entries)
+  - [Sub-entries type](#sub-entries-type)
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-# My personal notes on processing the .lift and .flextext exported data
-
 <!-- badges: start -->
 
 [<img src="../file-oxweb-logo.gif" width="84"
@@ -15,14 +27,14 @@ alt="The University of Oxford" />](https://www.ox.ac.uk/)
 alt="Faculty of Linguistics, Philology and Phonetics, the University of Oxford" />](https://www.ling-phil.ox.ac.uk/)
 [<img src="../file-ahrc.png" width="325"
 alt="Arts and Humanities Research Council (AHRC)" />](https://www.ukri.org/councils/ahrc/)
-</br>*This work is part of the [AHRC-funded
-project](https://app.dimensions.ai/details/grant/grant.12915105) on the
-lexical resources for Enggano, led by the Faculty of Linguistics,
+</br>*This work is part of the [AHRC-funded project
+(AH/W007290/1)](https://app.dimensions.ai/details/grant/grant.12915105)
+on the lexical resources for Enggano, led by the Faculty of Linguistics,
 Philology and Phonetics at the University of Oxford, UK. Visit the
 [central webpage of the Enggano
 project](https://enggano.ling-phil.ox.ac.uk/)*. <!-- badges: end -->
 
-## Code file for processing the exported .lift data from FLEx `Lexicon`
+# Code file for processing the exported .lift data from FLEx `Lexicon`
 
 The code file to process the .lift export from FLEx `Lexicon` is
 [FLEX-contemporary-with-examples-new.R](https://github.com/engganolang/eno-flex/blob/main/FLEX-contemporary-with-examples-new.R).
@@ -33,7 +45,7 @@ This code file is the basis for the following output data, namely:
 2.  “`FLEX-lift-march-2024.rds`” (as per March 2024 project meeting at
     Udayana University)
 
-## Code files for processing the exported .flextext data from FLEx interlinear text in `Texts and Words`
+# Code files for processing the exported .flextext data from FLEx interlinear text in `Texts and Words`
 
 The codes to process the .flextext export data need to be run in the
 order given below. However, before these codes are run, I need to fix
@@ -97,7 +109,7 @@ generates the output data in .rds.
     (code file 2) and
     [gloss_fixing.R](https://github.com/engganolang/eno-flex/blob/main/contemporary-enggano-interlinear-text/gloss_fixing.R))
 
-## The exported .lift data from FLEx `Lexicon`
+# The exported .lift data from FLEx `Lexicon`
 
 The latest, exported `Lexicon` data based on the code file
 [FLEX-contemporary-with-examples-new.R](https://github.com/engganolang/eno-flex/blob/main/FLEX-contemporary-with-examples-new.R)
@@ -178,17 +190,55 @@ lu_form_df |>
 #> # ℹ 111 more rows
 ```
 
-## On `eno_word_id`
+# On `eno_word_id`
 
-- The same word form may have different `eno_word_id` because this same
-  word form comes from different texts!
+- IMPORTANT: The same word form may have different `eno_word_id` because
+  this same word form comes from different texts!
 
 - For example, the word “kapa’ueh” ‘put; lay down’ has three unique IDs
-  because these three IDs are coming from three different texts.
+  because these three IDs are coming from three different texts for this
+  one word.
 
-## On sub-entries
+# Textbook materials
 
-### Sub-entries type
+This section contains my notes to process the textbook-based print
+dictionary from the .flextext and .lift outputs.
+
+- Ensure in FLEx gloss tab that the writing system keyboard in each free
+  translation field is a match!
+
+  - If this is not the case, the use of English keyboard in Indonesian
+    field will render the language element of the .flextext output as
+    “en” for this Indonesian field.
+
+## Processing steps
+
+Here are the steps to follow.
+
+1.  Export from FLEx Analyze tab the .flextext file
+
+2.  Export from FLEx LEXICON feature the .lift file
+
+3.  The processing of the .flextext and .lift files:
+
+    1.  First run: the C section in
+        `processing-all-contemporary-texts-ELAN-FLEX-flextext-NEW.R`
+        that contains the code to turn the .flextext xml file into a
+        tabular format. This will generate the data
+        **`contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_oct-2024.rds`**
+
+    2.  Second run: the R code file `textbook-LIFT-processing-code.R` to
+        process the LIFT export that generates this .rds file
+        **`contemporary-enggano-interlinear-text/textbook-LIFT.rds`**.
+
+        1.  The morpheme splitting for the lexical entries is available
+            from this code file: `textbook-splitting-code.R`
+
+    3.  **\[TO DO: processing into SFM\]**
+
+# On sub-entries
+
+## Sub-entries type
 
 1.  The SFM can include custom marker indicating the specific type of
     the sub-entries.
