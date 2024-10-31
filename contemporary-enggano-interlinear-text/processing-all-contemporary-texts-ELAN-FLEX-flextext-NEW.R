@@ -678,7 +678,7 @@ library(xml2)
 
 ## read-in the .flextext export of the analyzed interlinear texts =====
 xml_file <- dir("contemporary-enggano-interlinear-text/", 
-                pattern = "textbook\\.flextext", 
+                pattern = "textbook\\-interlinear\\.flextext", 
                 full.names = TRUE)
 
 ## retrieve the interlinear-text node =====
@@ -704,7 +704,7 @@ phrases <- paragraphs |>
 
 ## 1. Gathering the original texts (under the <phrases> node) ======
 
-### get the Enggano text segment/node
+### get the Enggano text segment/node (i.e., the Baseline Enggano text in Interlinear text in FLEx)
 eno_text <- phrases |> 
   map(xml_find_all, "phrase/item[@type=\"txt\" and @lang=\"eno\"]") |> 
   map(xml_text)
@@ -1019,3 +1019,6 @@ df_all |>
   map(~filter(., !is.na(word))) |> 
   # write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_as_tibble-new.rds")
   write_rds("contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_oct-2024.rds")
+df_all1 <- df_all |> 
+  # filter out the NAs in the word
+  map(~filter(., !is.na(word)))
