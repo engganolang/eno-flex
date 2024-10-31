@@ -1,0 +1,9 @@
+# notes on processing textbook flextext xml output
+
+- “da ik” berarti ‘lah kita’ di bahasa Indonesia. is marked as "eno" as the language in the xml, change this into "id" by searching `type="gls" lang="eno"` then replace "eno" with "id"
+
+  - another BETTER and principled way is to ensure that the writing system in the Indonesian free translation is Indonesian keyboard
+  
+
+- The splitting to morpheme code is in "textbook-splitting.R" based on codes in "...flextext-NEW-splitting-morpheme.R"
+- The .rds file "contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_oct-2024.rds" is derived from codes inside the file named "processing-all-contemporary-texts-ELAN-FLEX-flextext-NEW.R" inside the Textbook sub-section
