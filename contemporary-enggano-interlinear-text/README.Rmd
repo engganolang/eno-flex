@@ -127,7 +127,81 @@ Here are the steps to follow.
     
         a. The morpheme splitting for the lexical entries is available from this code file: `textbook-splitting-code.R`
         
-    1. **[TO DO: processing into SFM]**
+    1. Third run: the R code `textbook-SFM.R` for turning .LIFT and .flextext into SFM
+    
+## On importing to FLEx
+
+This note records entry to merge between FLORA & FAUNA data, Cultural Items data, and Textbook materials. The SFM of FLORA & FAUNA is separately processed from Cultural Items + Textbook materials.
+
+### Entries to merge
+
+1. puru 'leaf' (delete the third sense duplicate of *puru*)
+
+1. it 'banana' 
+
+    - merge sense 2 banana (that has image) with sense 1 also banana (coming from textbook materials)
+    
+1. abeh 'bambu' (-merge sense as well)
+
+1. akė 'patah' (-merge sense as well)
+
+1. amai 'tebu'
+
+1. ame 'kima'
+
+1. anima
+
+1. anu'un
+
+1. apu 'jenis kayu'
+
+1. apu' 'snake'
+
+1. are'iar 'belalang' (check the NAs!)
+
+1. arkih 'beras'
+    
+1. bak kaha' 'sun' and 'clock'
+
+1. bakayė 'sirsak'
+
+1. be 'anjing'
+
+1. bih 'lebah'
+
+1. dadė 'cabe'
+
+1. dih 'daun muda; pucuk'; CHECK the glossing for "dih nan"
+
+1. dudiad 'durian'
+
+1. ea 'tulang'
+
+1. eai 'ikan'
+
+1. CHECK hapu̇-hapu̇ dop
+
+1. hia
+
+### Change sub-entries from derivative to variant
+
+1. teb/tem
+
+1. anah 'thus'
+
+1. Apoho
+
+1. arib he aru 'seven' (check the orig. FLEx file)
+
+1. bahem
+
+1. Bakaor
+
+NOTE : for this section, it has been fixed in the R code (esp. in `textbook-splitting-code.R`) where I identified a variable for grouping words as complex forms when the morph_gloss_en contains `__`, which I use as a separator for morpheme-by-morpheme glossing of the complex forms. So, if words have these morpheme structures, they are treated as subentries of the root (to distinguish them with variant)
+
+
+
+
 
 # On sub-entries
 

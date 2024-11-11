@@ -15,6 +15,10 @@ of Oxford, UK & Universitas Udayana, Indonesia
 - [On `eno_word_id`](#on-eno_word_id)
 - [Textbook materials](#textbook-materials)
   - [Processing steps](#processing-steps)
+  - [On importing to FLEx](#on-importing-to-flex)
+    - [Entries to merge](#entries-to-merge)
+    - [Change sub-entries from derivative to
+      variant](#change-sub-entries-from-derivative-to-variant)
 - [On sub-entries](#on-sub-entries)
   - [Sub-entries type](#sub-entries-type)
 
@@ -234,7 +238,86 @@ Here are the steps to follow.
         1.  The morpheme splitting for the lexical entries is available
             from this code file: `textbook-splitting-code.R`
 
-    3.  **\[TO DO: processing into SFM\]**
+    3.  Third run: the R code `textbook-SFM.R` for turning .LIFT and
+        .flextext into SFM
+
+## On importing to FLEx
+
+This note records entry to merge between FLORA & FAUNA data, Cultural
+Items data, and Textbook materials. The SFM of FLORA & FAUNA is
+separately processed from Cultural Items + Textbook materials.
+
+### Entries to merge
+
+1.  puru ‘leaf’ (delete the third sense duplicate of *puru*)
+
+2.  it ‘banana’
+
+    - merge sense 2 banana (that has image) with sense 1 also banana
+      (coming from textbook materials)
+
+3.  abeh ‘bambu’ (-merge sense as well)
+
+4.  akė ‘patah’ (-merge sense as well)
+
+5.  amai ‘tebu’
+
+6.  ame ‘kima’
+
+7.  anima
+
+8.  anu’un
+
+9.  apu ‘jenis kayu’
+
+10. apu’ ‘snake’
+
+11. are’iar ‘belalang’ (check the NAs!)
+
+12. arkih ‘beras’
+
+13. bak kaha’ ‘sun’ and ‘clock’
+
+14. bakayė ‘sirsak’
+
+15. be ‘anjing’
+
+16. bih ‘lebah’
+
+17. dadė ‘cabe’
+
+18. dih ‘daun muda; pucuk’; CHECK the glossing for “dih nan”
+
+19. dudiad ‘durian’
+
+20. ea ‘tulang’
+
+21. eai ‘ikan’
+
+22. CHECK hapu̇-hapu̇ dop
+
+23. hia
+
+### Change sub-entries from derivative to variant
+
+1.  teb/tem
+
+2.  anah ‘thus’
+
+3.  Apoho
+
+4.  arib he aru ‘seven’ (check the orig. FLEx file)
+
+5.  bahem
+
+6.  Bakaor
+
+NOTE : for this section, it has been fixed in the R code (esp. in
+`textbook-splitting-code.R`) where I identified a variable for grouping
+words as complex forms when the morph_gloss_en contains `__`, which I
+use as a separator for morpheme-by-morpheme glossing of the complex
+forms. So, if words have these morpheme structures, they are treated as
+subentries of the root (to distinguish them with variant)
 
 # On sub-entries
 
