@@ -7,11 +7,16 @@ library(tidyverse)
 eno_file_text <- "contemporary-enggano-interlinear-text/eno_contemp_text_as_tibble-new-march2024.rds"
 # eno_file_elicit <- "contemporary-enggano-interlinear-text/eno_contemp_elicitation_as_tibble-new.rds"
 eno_file_elicit <- "contemporary-enggano-interlinear-text/eno_contemp_elicitation_as_tibble-new-march2024.rds"
+eno_file_textbook <- "contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_oct-2024.rds"
 
 eno <- read_rds(eno_file_text) |> 
   list_rbind()
 
 eno <- bind_rows(eno, list_rbind(read_rds(eno_file_elicit)))
+
+# Textbook materials ======
+eno_tbook <- read_rds(eno_file_textbook) |> 
+  list_rbind()
 
 ## select the phrase ID as key and all morph columns
 col_to_match <- "^(morph|homonym|lex_entry)"
