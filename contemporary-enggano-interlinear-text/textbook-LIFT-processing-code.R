@@ -1,18 +1,21 @@
-# Code to process the .lift export of FLEx lexicon into tibble
-# Gede Rajeg (University of Oxford & Universitas Udayana; 2023)
+# Code to process the .lift export of FLEx "Lexicon" into tibble
+# Gede Rajeg (University of Oxford & Universitas Udayana; 2023-2024)
 
 library(tidyverse)
 library(xml2)
+library(stringi)
 
 # flexdb <- read_xml("contemporary-enggano-interlinear-text/textbook-LIFT.lift") # Textbook processing
-flexdb <- read_xml("contemporary-enggano-interlinear-text/textbook-LIFT-20241110.lift") # Textbook processing
+# flexdb <- read_xml("contemporary-enggano-interlinear-text/textbook-LIFT-20241110.lift") # Textbook processing
+# flexdb <- read_xml("contemporary-enggano-interlinear-text/textbook-LIFT-20241129.lift") # Textbook processing
+flexdb <- read_xml("contemporary-enggano-interlinear-text/textbook-LIFT-20241201.lift") # Textbook processing
 
 # MAIN ENTRY ======
 
 # extract only the <entry>
 myentry <- flexdb %>% 
   xml_find_all("entry")
-length(myentry) # this number should be the same with the number of entries in FLEx LEXICON feature.
+length(myentry) # this number should be the same with the number of the (FILTERED) entries in FLEx LEXICON feature.
 
 # determine the length of children for each <entry>
 myentry_length <- myentry %>% 
@@ -47,9 +50,11 @@ lu_form <- myentry %>%
 
 ### check the length of the form/text elements
 lu_form_length <- lu_form |> map_int(length)
+length(lu_form_length)
 
 ### duplicate the entry id as many as the number of elements of form/text
 lu_form_entry_id <- rep(myentry_id_num, lu_form_length)
+length(lu_form_entry_id)
 
 ### create the tibble for the lu form
 lu_form_df <- lu_form |> 
@@ -314,6 +319,17 @@ lu_form_df <- lu_form_df |>
 # FLORA AND FAUNA =====
 ## FLORA ====
 flora_df1 <- read_rds("G:/.shortcut-targets-by-id/1MO3Q9KZIODxlfPRyjLTtDUZuVkecFBp6/Enggano/enggano-dictionary/flora-fauna/flora_df1.rds")
+flora_root_in_flex_with_image <- flora_df1 |> 
+  filter(is.na(MAIN_ENTRY)) |> 
+  filter(IN_FLEX == "y") |> 
+  mutate(POS = replace(POS, POS == "n", "Noun")) |>
+  mutate(POS = replace(POS, POS == "v", "Verb")) |> 
+  mutate(ENGGANO = stringi::stri_trans_nfc(ENGGANO)) |> 
+  rename(form = ENGGANO,
+         sense_gloss_en = ENGLISH,
+         sense_gloss_idn = INDONESIAN) |>  # rename the relevant column for left join
+  select(form, sense_gloss_en, sense_gloss_idn, sense_gram = POS, CROSSREF, pc, VARIANT)
+
 ## FAUNA ====
 fauna_df1 <- read_rds("G:/.shortcut-targets-by-id/1MO3Q9KZIODxlfPRyjLTtDUZuVkecFBp6/Enggano/enggano-dictionary/flora-fauna/fauna_df1.rds")
 fauna_root_in_flex_with_image <- fauna_df1 |> 
@@ -322,6 +338,7 @@ fauna_root_in_flex_with_image <- fauna_df1 |>
          ) |>  # and that has image
   mutate(POS = replace(POS, POS == "n", "Noun"),
          POS = replace(POS, POS == "v", "Verb")) |> 
+  mutate(ENGGANO = stringi::stri_trans_nfc(ENGGANO)) |> 
   rename(form = ENGGANO,
          sense_gloss_en = ENGLISH,
          sense_gloss_idn = INDONESIAN) |>  # rename the relevant column for left join
@@ -373,4 +390,6 @@ fauna_root_in_flex_with_image <- fauna_df1 |>
 
 # write_rds(lu_form_df, "FLEX-lift-pre-fieldwork.rds")
 # write_rds(lu_form_df, "contemporary-enggano-interlinear-text/textbook-LIFT.rds")
-write_rds(lu_form_df, "contemporary-enggano-interlinear-text/textbook-LIFT-20241110.rds")
+# write_rds(lu_form_df, "contemporary-enggano-interlinear-text/textbook-LIFT-20241110.rds")
+# write_rds(lu_form_df, "contemporary-enggano-interlinear-text/textbook-LIFT-20241129.rds")
+write_rds(lu_form_df, "contemporary-enggano-interlinear-text/textbook-LIFT-20241201.rds")

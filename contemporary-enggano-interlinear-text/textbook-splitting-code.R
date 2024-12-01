@@ -6,7 +6,9 @@ library(stringi)
 # Textbook materials ======
 
 ## read the saved tibble
-eno_file_textbook <- "contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_nov-2024.rds"
+# eno_file_textbook <- "contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_nov-2024.rds"
+# eno_file_textbook <- "contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_20241129.rds"
+eno_file_textbook <- "contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_20241201.rds"
 eno_tbook <- read_rds(eno_file_textbook) |> 
   list_rbind()
 
@@ -71,3 +73,12 @@ eno_morph_split1 |>
   ungroup() |> 
   select(-word) |> 
   distinct()
+
+# checking the possessed noun after running the code file ...splitting-morpheme.R
+eno_tbook |> filter(str_detect(morph_gloss_en, "[1-3]..\\.POSS$")) |> select(word, morph_gloss_en) |> distinct() |> nrow()
+
+eno_tbook |> 
+  filter(str_detect(morph_gloss_en, "[1-3]..\\.POSS$")) |> 
+  select(word, morph_gloss_en) |> 
+  distinct() |> 
+  slice_sample(n = 20)
