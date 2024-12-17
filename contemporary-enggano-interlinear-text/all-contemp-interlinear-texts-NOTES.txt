@@ -1,29 +1,29 @@
 note on irregularities in the contemporary (texts and elicitation) .flextext data
 
-0. the gloss attribute name for Bakblau "Bak Hėkė kita akan pelihara" (line: 10299) must be changed to "id"
+0. the gloss attribute name for Bakblau "Bak Hėkė kita akan pelihara" (line: 10299) must be changed to "id" (DONE, fixed in FLEx gloss writing system)
 
 1. the gloss element name for (the followings are for the ELICATION)
 
-	"dia membeli dengan anaknya buku", (line 108112)
-	"di meninggalkan rumah", (line 107522)
-	"saya membunuh dua laki-laki", (line 98814 & 98926) 
-	"jangan mendekat, akan dibunuh kamu nanti" (line 97977), 
-	"kalian datang kalian pergi" (line 87005), 
-	"kamu akan membunuh saya" (98296), 
-	"Setelah selesai makan, mereka pun kembali bekerja" (142133)
-	"saya membuat anak itu  jatuh dari pohon" (312635)
+	"dia membeli dengan anaknya buku", (line 108112) (DONE, fixed in FLEx gloss writing system)
+	"di meninggalkan rumah", (line 107522) (DONE, fixed in FLEx gloss writing system)
+	"saya membunuh dua laki-laki", (line 98814 & 98926) (DONE, fixed in FLEx gloss writing system)
+	"jangan mendekat, akan dibunuh kamu nanti" (line 97977), (DONE, fixed in FLEx gloss writing system)
+	"kalian datang kalian pergi" (line 87005), (DONE, fixed in FLEx gloss writing system)
+	"kamu akan membunuh saya" (98296), (DONE, fixed in FLEx gloss writing system)
+	"Setelah selesai makan, mereka pun kembali bekerja" (142133) (DONE, fixed in FLEx gloss writing system)
+	"saya membuat anak itu  jatuh dari pohon" (312635) (DONE, fixed in FLEx gloss writing system)
 	
 needs to be change to "id"
 
 2. The "whose child is naughty? Pak Dendi's child" needs to be split into 114.1 and 114.2
-	- move the "whose child is naughty" to the free translation of 114.1 (line 167396)
+	- move the "whose child is naughty" to the free translation of 114.1 (line 167396) (DONE, fixed in FLEx gloss writing system)
 
-3. "saya tidak melihat dia tadi" (355419), "saya tidak dilihatnya'" needs to be changed to "id" from "eno" (355485)
+3. "saya tidak melihat dia tadi" (355419), "saya tidak dilihatnya'" needs to be changed to "id" from "eno" (355485) (DONE, fixed in FLEx gloss writing system)
 
 
 The homonym ID of "eit" (pisang) in Cara Bertani line 90 needs to be changed from now "it2" ('drink') becomes "it1" ('pisang')
 - search term: kikoh, eit
-- line (202363)
+- line (202363)  (DONE, fixed in FLEx)
 
 =====================================================================
 

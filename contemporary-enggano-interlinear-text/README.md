@@ -24,7 +24,6 @@ of Oxford, UK & Universitas Udayana, Indonesia
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
-
 [<img src="../file-oxweb-logo.gif" width="84"
 alt="The University of Oxford" />](https://www.ox.ac.uk/)
 [<img src="../file-lingphil.png" width="83"
@@ -36,7 +35,18 @@ alt="Arts and Humanities Research Council (AHRC)" />](https://www.ukri.org/counc
 on the lexical resources for Enggano, led by the Faculty of Linguistics,
 Philology and Phonetics at the University of Oxford, UK. Visit the
 [central webpage of the Enggano
-project](https://enggano.ling-phil.ox.ac.uk/)*. <!-- badges: end -->
+project](https://enggano.ling-phil.ox.ac.uk/)*.
+<p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/">
+<a property="dct:title" rel="cc:attributionURL" href="https://github.com/engganolang/eno-flex">R
+codes and dataset for processing the Enggano FLEx database into the
+digital and printed Contemporary Enggano dictionary</a> by
+<a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://orcid.org/0000-0002-2047-8621">Gede
+Primahadi Wijaya Rajeg</a> is licensed under
+<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Creative
+Commons Attribution-NonCommercial-ShareAlike 4.0
+International<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" alt=""></a>
+</p>
+<!-- badges: end -->
 
 # Code file for processing the exported .lift data from FLEx `Lexicon`
 
@@ -245,7 +255,9 @@ Here are the steps to follow.
 
 This note records entry to merge between FLORA & FAUNA data, Cultural
 Items data, and Textbook materials. The SFM of FLORA & FAUNA is
-separately processed from Cultural Items + Textbook materials.
+separately processed from Cultural Items + Textbook materials. **UPDATE:
+17 Dec 2024**; this manual merging is no longer needed as the FLORA and
+FAUNA data are processed together with the textbook materials.
 
 ### Entries to merge
 
@@ -297,6 +309,156 @@ separately processed from Cultural Items + Textbook materials.
 22. CHECK hapu̇-hapu̇ dop
 
 23. hia
+
+24. hĩu ‘buah’
+
+25. hĩũk ‘kutu’
+
+26. ho’ku ‘hutan’
+
+27. CROSSREF. between “hu̇ė” ‘pick up’ and “hė” ‘pick up individually’
+    and “roro” ‘pick up collectively’
+
+28. iu’ ‘owl’
+
+29. iuk ‘skin’
+
+30. jekor ‘jengkol’
+
+31. CROSSREF. between “ka ke’ep” ‘chalk’ which could be derived from
+    ‘bird feces’
+
+32. CROSSREF. between “ka udauh” ‘awan’ which could be derived from the
+    ‘feces of the thunder’
+
+33. SUBENTRIES FOR “kahai’ datuh” and “kahai’ dibu” and “kahai’ kak”
+    ‘twenty’ and “kahi kak” ‘twenty’
+
+34. SUBENTRIES FOR “kak hoba’a” ‘orang yang sudah meninggal’ “kak
+    kiparuruha heo iub” ‘pembantu rumah tangga’ ‘orang membantu dalam
+    rumah’
+
+35. kãkõ ‘kangkung’
+
+36. kamiu needs picture
+
+37. CROSSREF between kãp and kanap ‘kepala suku’
+
+38. kapaer ‘pepaya’
+
+39. kapi ‘sapi’
+
+40. kapareak
+
+41. ka’pi iė̃p ‘membersihkan rumput’ link to ‘clean’ and ‘rumput’
+
+42. karbo
+
+43. jamur
+
+44. kė ‘menanam’
+
+45. ke’ep ‘bird’
+
+46. kiadeb ‘ayam’
+
+47. kih ‘semut’
+
+48. kia ‘nyamuk’
+
+49. belalang
+
+50. kikoh
+
+51. ikan hiu
+
+52. lipan
+
+53. kite ‘kayu merbau’
+
+54. ko’ia ‘melinjo’
+
+55. ko’ka biji
+
+56. kopen ‘caterpillar’
+
+57. korea ‘cekakak’
+
+58. ku ‘kayu/wood’
+
+59. kuahai
+
+60. kud ‘kuda’
+
+61. ku̇h ‘penyu’
+
+62. CROSSREF for Indonesian ‘tunggit’
+
+63. kunyit
+
+64. mana’ai ‘ular’
+
+65. mea ‘kucing’
+
+66. mikmik
+
+67. minata
+
+68. mum
+
+69. mũo ‘bunga’
+
+70. na’inė
+
+71. pakihieb
+
+72. paik ‘udang’
+
+73. katak/kodok
+
+74. seludung kelapa/pelepah
+
+75. pĩ‘ĩ ’keong hutan’
+
+76. po ‘kelapa’
+
+77. porpi’
+
+78. puk ‘pusar’
+
+79. puru/pururu
+
+80. taripa
+
+81. teke/cengkeh
+
+82. tiri ‘sirih’
+
+83. tumi-tumi
+
+84. ubi’
+
+85. udep ‘talas/taro’
+
+86. uki ‘manggo’
+
+87. yahaid
+
+88. yãkãh ‘gagang’/‘stem’
+
+89. jagung
+
+90. CROSSREF ‘kuburan’
+
+91. yẽãp
+
+92. yėp ’rumput
+
+93. yi’ pantat
+
+94. SUBENTRIES: yub yahmi’i ‘prison’ (mi’ hukum)
+
+95. yum ‘lalat’
 
 ### Change sub-entries from derivative to variant
 
