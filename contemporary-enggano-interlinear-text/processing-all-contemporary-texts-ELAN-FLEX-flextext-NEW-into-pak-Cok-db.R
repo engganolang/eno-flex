@@ -1220,7 +1220,7 @@ length(str_subset(root_id, no_root_word_id_rgx)) == length(unique(no_root_word_i
 
 
 
-
+## The code bits to create the Google Spreadsheet file for the output for Pak Cok's team ===========
 # googledrive::drive_ls(googledrive::as_id("1JIuY52VL6SsQdFkoC7VVgLo_JratQ0x1"))
 # googledrive::drive_create("flex-output-for-pak-cok-team", path = googledrive::as_id("1JIuY52VL6SsQdFkoC7VVgLo_JratQ0x1"), type = "spreadsheet")
 

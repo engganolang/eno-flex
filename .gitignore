@@ -24,6 +24,12 @@ contemporary-enggano-interlinear-text/**analysed.flextext
 contemporary-enggano-interlinear-text/**xling-3-ORIG.xml
 contemporary-enggano-interlinear-text/**xling-3.xml
 contemporary-enggano-interlinear-text/**original.txt
+contemporary-enggano-interlinear-text/[0-9][0-9]-*
+give*
+middle*
+test_se_*
+Enggano-with-examples-for*
+BER-_from*
 flex-sfm-import-experiment/*.PNG
 flex-sfm-import-experiment/format*.db
 flex-sfm-import-experiment/subentries-import-*
