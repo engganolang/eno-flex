@@ -1,11 +1,12 @@
 library(tidyverse)
+library(stringi)
 
 # lu_form_df <- read_rds("FLEX-lift-pre-fieldwork.rds")
 # lu_form_df <- read_rds("FLEX-lift-march-2024.rds") 
 # lu_form_df <- read_rds("contemporary-enggano-interlinear-text/textbook-LIFT.rds")
 # lu_form_df <- read_rds("contemporary-enggano-interlinear-text/textbook-LIFT-20241110.rds")
 # lu_form_df <- read_rds("contemporary-enggano-interlinear-text/textbook-LIFT-20241129.rds")
-lu_form_df <- read_rds("contemporary-enggano-interlinear-text/textbook-LIFT-20241201.rds") |> 
+lu_form_df <- read_rds("textbook/textbook-LIFT-20241201.rds") |> 
   mutate(sense_gloss_idn = replace(sense_gloss_idn, sense_gloss_idn == "pelapah nibung", "pelepah nibung")) |> 
   mutate(sense_gloss_en = replace(sense_gloss_en, sense_gloss_en == "land turtle" & form == "anu'un", "turtoise; land turtle")) |> 
   mutate(sense_gloss_en = replace(sense_gloss_en, sense_gloss_en == "a sea creature" & form == stri_trans_nfc("kahẽ"), "bristle worm")) |> 
@@ -18,7 +19,7 @@ source("contemporary-enggano-interlinear-text/textbook-splitting-code.R")
 # eno_textbook_texts <- read_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_oct-2024-binded.rds")
 # eno_textbook_texts <- read_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_nov-2024-binded.rds")
 # eno_textbook_texts <- read_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_20241129-binded.rds")
-eno_textbook_texts <- read_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_20241201-binded.rds")
+eno_textbook_texts <- read_rds("textbook/textbook_as_tibble_20241201-binded.rds")
 
 # read flora and fauna data =====
 flora_df1 <- read_rds("G:/.shortcut-targets-by-id/1MO3Q9KZIODxlfPRyjLTtDUZuVkecFBp6/Enggano/enggano-dictionary/flora-fauna/flora_df1.rds") |> 
@@ -158,7 +159,7 @@ fl_residu <- flora_df1 |>
   select(where(function(x) any(x != "") == TRUE))
 
 
-### FAUNA data ====
+## FAUNA data ====
 fauna_df1 <- read_rds("G:/.shortcut-targets-by-id/1MO3Q9KZIODxlfPRyjLTtDUZuVkecFBp6/Enggano/enggano-dictionary/flora-fauna/fauna_df1.rds") |> 
   filter(is.na(INCLUDE)) |> 
   mutate(ENGGANO = stri_trans_nfc(ENGGANO),
@@ -172,7 +173,7 @@ fauna_df1 <- read_rds("G:/.shortcut-targets-by-id/1MO3Q9KZIODxlfPRyjLTtDUZuVkecF
   filter(ENGGANO != "aham") |> 
   filter(ENGGANO != "iuk")
 
-#### Fauna with picture NOT SUBENTRY/NO MAIN ENTRY=====
+### Fauna with picture NOT SUBENTRY/NO MAIN ENTRY=====
 fn1_with_pict_lexentry_non_in_flex <- fauna_df1 |> 
   filter(is.na(MAIN_ENTRY), pc != "", is.na(IN_FLEX))
 fn1_with_pict_lexentry_non_in_flex_ID <- fn1_with_pict_lexentry_non_in_flex$NO
@@ -201,7 +202,7 @@ fn1_with_pict_lexentry_non_in_flex2 <- fn1_with_pict_lexentry_non_in_flex |>
 fn1_residu <- fauna_df1 |> 
   filter(!NO %in% c(fn1_ID, fn1_1_ID, fn1_with_pict_lexentry_non_in_flex_ID))
 
-#### FAUNA with SUBENTRY=====
+### FAUNA with SUBENTRY=====
 fn1_residu_se <- fn1_residu |> 
   filter(!is.na(MAIN_ENTRY))
 fn1_residu_se_mainentry <- fn1_residu_se |> select(MAIN_ENTRY, MAIN_ENTRY_EN, MAIN_ENTRY_IDN) |> distinct()
@@ -254,7 +255,23 @@ fn1_residu_not_in_flex <- fn1_residu_1 |>
   mutate(across(where(is.character), ~replace_na(., ""))) |> 
   select(where(function(x) any(x != "") == TRUE))
 
-# list of proper name to exclude from the entries
+## Cultural data ====
+cullex_ge0_root <- read_rds("../Enggano-Fieldwork/2nd-fieldwork-2024-02-01/cultlex_with_pict_ge0.rds") |> 
+  filter(morph_type == "root") |> 
+  mutate(across(matches("^(word|lx)$"), ~stri_trans_nfc(.)))
+cullex_ge0_complex <- read_rds("../Enggano-Fieldwork/2nd-fieldwork-2024-02-01/cultlex_with_pict_ge0.rds") |> 
+  filter(morph_type != "root") |> 
+  mutate(word = replace(word, word %in% "aroro' yakare", "aroro'")) |> 
+  mutate(across(matches("^(word|lx)$"), ~stri_trans_nfc(.)))
+cullex_ge1_root <- read_rds("../Enggano-Fieldwork/2nd-fieldwork-2024-02-01/cultlex_with_pict_ge1.rds") |> 
+  filter(morph_type == "root") |> 
+  mutate(lx = replace(lx, gn_1 == "rawa-rawa", "'ẽõ")) |> 
+  mutate(across(matches("^(word|lx)$"), ~stri_trans_nfc(.)))
+cullex_ge1_complex <- read_rds("../Enggano-Fieldwork/2nd-fieldwork-2024-02-01/cultlex_with_pict_ge1.rds") |> 
+  filter(morph_type != "root") |> 
+  mutate(across(matches("^(word|lx)$"), ~stri_trans_nfc(.)))
+
+# list of proper name to exclude from the entries =========
 person_entries <- c("Ga", "Engga", "Gede", "Charlotte", "Bill",
                     "Dendi", "Daniel", "Mary", "Bill", "Aron",
                     "Andi", "Adam", "Ali", "Indonesia", "Inggris",
@@ -1669,13 +1686,19 @@ word_subentry_examples2 <- sn2_2 |>
 word_subentry_examples2 |> colnames() |> str_subset("^va_")
 
 word_subentry_examples2_1 <- word_subentry_examples2 |> 
-  left_join(bind_rows(fl1, fn1)) |> 
+  left_join(bind_rows(fl1, 
+                      fn1, 
+                      select(cullex_ge0_root, lx, ge_0, gn_0, pc_0 = pc, cf) # cultural data for root with first sense (I decided to add the cultural items photos manually for the sub-entries after the FLEx import)
+                      )) |> 
   relocate(pc_0, .before = sn_1) |> 
   relocate(nt_0, .after = gn_0) |> 
   relocate(nt_ID_0, .after = nt_0) |> 
   relocate(variant1, .after = va_16) |>
   rename(va_17 = variant1) |>
-  left_join(bind_rows(fl1_1, fn1_1)) |> 
+  left_join(bind_rows(fl1_1, 
+                      fn1_1,
+                      select(cullex_ge1_root, lx, ge_1, gn_1, pc_1 = pc) # cultural data for root with second sense (I decided to add the cultural items photos manually for the sub-entries after the FLEx import)
+                      )) |> 
   relocate(pc_1, .before = sn_2) |> 
   relocate(nt_1, .after = gn_1) |> 
   relocate(nt_ID_1, .after = nt_1) |> 
@@ -1695,7 +1718,59 @@ word_subentry_examples2_1 <- word_subentry_examples2 |>
   bind_rows(fn1_with_pict_lexentry_non_in_flex2) |> 
   bind_rows(fn1_residu_not_in_flex)
   
-  
+
+### cultural data ======
+# word_subentry_examples2_1
+# 
+# 
+# 
+# sew_colnames <- vector(mode = "character")
+# 
+# for (i in seq_along(cullex_ge0_complex$word)) {
+#   
+#   cul_ge <- cullex_ge0_complex$ge_0[i]
+#   cul_gn <- cullex_ge0_complex$gn_0[i]
+#   cul_lx <- cullex_ge0_complex$lx[i]
+#   cul_sew <- cullex_ge0_complex$word[i]
+#   cul_pc <- cullex_ge0_complex$pc[i]
+#   
+#   sew_cul_df_interim <- word_subentry_examples2_1 |> 
+#     filter(lx %in% cul_lx, ge_0 %in% cul_ge, gn_0 %in% cul_gn)
+#   if (nrow(sew_cul_df_interim) > 0) {
+#     cat(i, "\n")
+#     sew_colnames <- sew_cul_df_interim |> 
+#       select(where(function(x) any(x %in% cul_sew))) |> 
+#       colnames() |> 
+#       str_subset("^sew")
+#     row_items <- which(word_subentry_examples2_1$lx %in% cul_lx &
+#                          word_subentry_examples2_1$ge_0 %in% cul_ge &
+#                          word_subentry_examples2_1$gn_0 %in% cul_gn)
+#     # sew_cul_df_interim |> 
+#     #   select(matches(sew_colnames)) |> 
+#     #   select(where(function(x) any(x!="") == TRUE)) |> 
+#     #   select(matches(paste()))
+#     
+#     colnames_for_pc <- str_c(sew_colnames, "__snw_0__rfw_2", sep = "")
+#     colnames_for_pc_id <- which(colnames(word_subentry_examples2_1) %in% colnames_for_pc)
+#     word_subentry_examples2_1[row_items, colnames_for_pc_id] <- str_c(word_subentry_examples2_1[row_items, colnames_for_pc_id], "\n\\pc ", cul_pc, sep = "")
+#     
+#   } else {
+#     
+#     cat(cul_sew, "is missing")
+#     
+#   }
+#  
+#   
+# }
+
+
+
+
+
+
+
+
+
 ## turn into a long table for SFM format
 word_subentry_examples3 <- word_subentry_examples2_1 |> 
   
@@ -1806,14 +1881,15 @@ mutate(vals = replace(vals, vals %in% c("Adjective"), "adj"),
 word_subentry_examples4 |>
   # exclude number entry
   filter(str_detect(lx_key, "^[0-9]+$", TRUE)) |> 
-pull(sfm) |>
+  # mutate(sfm = str_replace(sfm, "\\\\rf\\s\\n(?=\\\\pc)", "")) |> 
+  pull(sfm) |>
 # filter(lx_key %in% tes_lex) |>
 # write_lines("FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples.db")
 # write_lines("FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples-2024-07-17.db")
 # write_lines("Textbook-dictionary.db")
 # write_lines("Textbook-dictionary-20241110.db")
 # write_lines("Textbook-dictionary-20241129-no-example-for-same-phrase.db")
-write_lines("Textbook-dictionary-20241201-no-example-for-same-phrase.db")
+write_lines("textbook/textbook-dictionary-20241213-no-example-for-same-phrase.db")
 
 
 
