@@ -36,6 +36,14 @@ International<img style="height:22px!important;margin-left:3px;vertical-align:te
 
 ## Description
 
+How to cite this repository (in APA 7<sup>th</sup>):
+
+> [Rajeg](https://orcid.org/0000-0002-2047-8621), G. P. W. (2024). *R
+> codes and dataset for processing the Contemporary Enggano FLEx
+> database into the digital and printed Contemporary Enggano dictionary*
+> (Version 0.0.1) \[Computer software\]. University of Oxford.
+> <https://doi.org/10.17605/OSF.IO/4BHMU>
+
 This repository records the R codes I use to process the LIFT output of
 FLEx Lexicon and integrate it with the .flextext output of the
 interlinear texts to build the SFM format to be imported back to FLEx.
