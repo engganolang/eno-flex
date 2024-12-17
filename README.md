@@ -30,6 +30,8 @@ Primahadi Wijaya Rajeg</a> is licensed under
 Commons Attribution-NonCommercial-ShareAlike 4.0
 International<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" alt=""></a>
 </p>
+
+[![](https://img.shields.io/badge/doi-10.17605/OSF.IO/4BHMU-lightblue.svg)](https://doi.org/10.17605/OSF.IO/4BHMU)
 <!-- badges: end -->
 
 ## Description
@@ -37,9 +39,11 @@ International<img style="height:22px!important;margin-left:3px;vertical-align:te
 This repository records the R codes I use to process the LIFT output of
 FLEx Lexicon and integrate it with the .flextext output of the
 interlinear texts to build the SFM format to be imported back to FLEx.
+For my personal use, I put my notes
+[here](https://github.com/engganolang/eno-flex/blob/main/contemporary-enggano-interlinear-text/README.md).
 
-These processings are needed to automate the linking between the root
-and the complex forms (as subentries of the roots), including adding the
+These processing are needed to automate the linking between the root and
+the complex forms (as sub-entries of the roots), including adding the
 example sentences and source references of these examples.
 
 *NOTE*: The original, contemporary Enggano FLEx database needs to be
