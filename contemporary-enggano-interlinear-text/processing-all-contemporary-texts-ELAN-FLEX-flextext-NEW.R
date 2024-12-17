@@ -677,9 +677,19 @@ library(tidyverse)
 library(xml2)
 
 ## read-in the .flextext export of the analyzed interlinear texts =====
-xml_file <- dir("contemporary-enggano-interlinear-text/", 
-                pattern = "textbook\\-interlinear\\.flextext", 
+# xml_file <- dir("contemporary-enggano-interlinear-text/", 
+#                 pattern = "textbook\\-interlinear\\.flextext", 
+#                 full.names = TRUE)
+# xml_file <- dir("contemporary-enggano-interlinear-text/", 
+#                 pattern = "textbook\\-interlinear\\-2024.+.flextext", 
+#                 full.names = TRUE)
+# xml_file <- dir("contemporary-enggano-interlinear-text/", 
+#                 pattern = "textbook\\-interlinear\\-20241129.flextext", 
+#                 full.names = TRUE)
+xml_file <- dir("textbook/", 
+                pattern = "textbook\\-interlinear\\-20241201.flextext", 
                 full.names = TRUE)
+xml_file
 
 ## retrieve the interlinear-text node =====
 interlinear_text <- xml_file |> 
@@ -690,7 +700,12 @@ interlinear_text <- xml_file |>
 title <- interlinear_text |> 
   xml_find_all("item[@type=\"title\" and @lang=\"eno\"]") |> 
   xml_text() |> 
-  str_replace_all("^(\\d+)[^A-Za-z]+", "\\1_")
+  str_replace_all("^(\\d+)[^A-Za-z]+", "\\1_") |> 
+  str_replace_all("Teaching Materials.+(?=Unit)", "") |> 
+  str_replace_all("(?<=Unit\\s)0", "") |> 
+  str_replace_all("\\sUnit\\s", "_") |> 
+  str_replace_all("^Traditional_Cultural.+(?=_0)", "Culture") |> 
+  str_replace_all("^Traditional_Cloth.+(?=_0)", "Attire")
 
 ## retrieve the paragraph node =====
 paragraphs <- xml_find_all(interlinear_text, "paragraphs")
@@ -763,16 +778,31 @@ eno_text_gloss_df |>
   
   # remove section symbol
   map(~mutate(., eno_phrase = str_replace_all(eno_phrase, "§\\s$", ""))) |> 
+  
+  # rename title
+  # map(~mutate(., text_title = str_replace_all(text_title, "Teaching Materials.+(?=Unit)", ""))) |> 
+  # map(~mutate(., text_title = str_replace_all(text_title, "(?<=Unit\\s)0", ""))) |> 
+  # map(~mutate(., text_title = str_replace_all(text_title, "\\sUnit\\s", "_"))) |> 
+  # map(~mutate(., text_title = str_replace_all(text_title, "^Traditional.+(?=_0)", "Culture"))) |> 
 
   # write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new.rds")
-  write_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_oct-2024.rds")
+  # write_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_20241129.rds")
+  write_rds("textbook/textbook_as_tibble_20241201.rds")
 eno_text_gloss_df_all |> 
   
   # remove section symbol
   mutate(eno_phrase = str_replace_all(eno_phrase, "§\\s$", "")) |> 
   
+  # rename title
+  # map(~mutate(., text_title = str_replace_all(text_title, "Teaching Materials.+(?=Unit)", ""))) |> 
+  # map(~mutate(., text_title = str_replace_all(text_title, "(?<=Unit\\s)0", ""))) |> 
+  # map(~mutate(., text_title = str_replace_all(text_title, "\\sUnit\\s", "_"))) |> 
+  # map(~mutate(., text_title = str_replace_all(text_title, "^Traditional.+(?=_0)", "Culture"))) |> 
+  
   # write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded.rds")
-  write_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_oct-2024-binded.rds")
+  # write_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_20241129-binded.rds")
+  write_rds("textbook/textbook_as_tibble_20241201-binded.rds")
+
 
 ## 2. Gathering the WORD and MORPH (and their glosses, POS, etc.) ======
 
@@ -1018,7 +1048,9 @@ df_all |>
   # filter out the NAs in the word
   map(~filter(., !is.na(word))) |> 
   # write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_as_tibble-new.rds")
-  write_rds("contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_oct-2024.rds")
+  # write_rds("contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_nov-2024.rds")
+  # write_rds("contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_20241129.rds")
+  write_rds("textbook/textbook_lexicon_as_tibble_20241201.rds")
 df_all1 <- df_all |> 
   # filter out the NAs in the word
   map(~filter(., !is.na(word)))
