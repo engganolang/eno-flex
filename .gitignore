@@ -25,3 +25,7 @@ contemporary-enggano-interlinear-text/**xling-3-ORIG.xml
 contemporary-enggano-interlinear-text/**xling-3.xml
 contemporary-enggano-interlinear-text/**original.txt
 flex-sfm-import-experiment/*.PNG
+flex-sfm-import-experiment/format*.db
+flex-sfm-import-experiment/subentries-import-*
+flex-sfm-import-experiment/import-setting*
+basic-vocab-list/

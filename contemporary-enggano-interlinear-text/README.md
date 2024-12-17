@@ -12,9 +12,15 @@ of Oxford, UK & Universitas Udayana, Indonesia
   `Texts and Words`](#code-files-for-processing-the-exported-flextext-data-from-flex-interlinear-text-in-texts-and-words)
 - [The exported .lift data from FLEx
   `Lexicon`](#the-exported-lift-data-from-flex-lexicon)
-- [On `eno_word_id`](#on-eno_word_id)
+- [On the “eno_word_id” value](#on-the-eno_word_id-value)
 - [Textbook materials](#textbook-materials)
   - [Processing steps](#processing-steps)
+    - [Processing the exported .flextext data for the
+      Textbook](#processing-the-exported-flextext-data-for-the-textbook)
+    - [Processing the exported .lift
+      data](#processing-the-exported-lift-data)
+    - [Processing into Standard Format Marker (SFM)
+      file](#processing-into-standard-format-marker-sfm-file)
   - [On importing to FLEx](#on-importing-to-flex)
     - [Entries to merge](#entries-to-merge)
     - [Change sub-entries from derivative to
@@ -204,7 +210,7 @@ lu_form_df |>
 #> # ℹ 111 more rows
 ```
 
-# On `eno_word_id`
+# On the “eno_word_id” value
 
 - IMPORTANT: The same word form may have different `eno_word_id` because
   this same word form comes from different texts!
@@ -218,8 +224,10 @@ lu_form_df |>
 This section contains my notes to process the textbook-based print
 dictionary from the .flextext and .lift outputs.
 
-- Ensure in FLEx gloss tab that the writing system keyboard in each free
-  translation field is a match!
+The R packages used are tidyverse, xml2, and stringi
+
+- IMPORTANT: Ensure in FLEx gloss tab that the writing system keyboard
+  in each free translation field is a match!
 
   - If this is not the case, the use of English keyboard in Indonesian
     field will render the language element of the .flextext output as
@@ -227,29 +235,119 @@ dictionary from the .flextext and .lift outputs.
 
 ## Processing steps
 
-Here are the steps to follow.
+The very first steps among others are exporting (i) the .flextext file
+from FLEx Analyze tab in TEXTS AND WORDS and (ii) the .lift file from
+FLEx LEXICON feature.
 
-1.  Export from FLEx Analyze tab the .flextext file
+The latest exported files from these two components of FLEx that are
+used for the print dictionary are:
 
-2.  Export from FLEx LEXICON feature the .lift file
+- `textbook/textbook-interlinear-20241201.flextext`
 
-3.  The processing of the .flextext and .lift files:
+- `textbook/textbook-LIFT-20241201.lift`
 
-    1.  First run: the C section in
-        `processing-all-contemporary-texts-ELAN-FLEX-flextext-NEW.R`
-        that contains the code to turn the .flextext xml file into a
-        tabular format. This will generate the data
-        **`contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_oct-2024.rds`**
+\[TO BE UPDATED: how to handle FLORA and FAUNA, and CULTURAL DATA for
+photos\]
 
-    2.  Second run: the R code file `textbook-LIFT-processing-code.R` to
-        process the LIFT export that generates this .rds file
-        **`contemporary-enggano-interlinear-text/textbook-LIFT.rds`**.
+### Processing the exported .flextext data for the Textbook
 
-        1.  The morpheme splitting for the lexical entries is available
-            from this code file: `textbook-splitting-code.R`
+#### Input data
 
-    3.  Third run: the R code `textbook-SFM.R` for turning .LIFT and
-        .flextext into SFM
+The input data file is
+`textbook/textbook-interlinear-20241201.flextext`.
+
+#### Code file/bits
+
+The R codes used are under the [`C. Textbooks`
+section](https://github.com/engganolang/eno-flex/blob/ffd88cebe419b1f9546700a0fa563113a16d985b/contemporary-enggano-interlinear-text/processing-all-contemporary-texts-ELAN-FLEX-flextext-NEW.R#L672)
+in the code file
+[`contemporary-enggano-interlinear-text/processing-all-contemporary-texts-ELAN-FLEX-flextext-NEW.R`](https://github.com/engganolang/eno-flex/blob/main/contemporary-enggano-interlinear-text/processing-all-contemporary-texts-ELAN-FLEX-flextext-NEW.R)\`.
+
+#### Output/generated file/data
+
+There are several outputs of data stored under the `textbook`
+sub-directory (included in the filename of the generated data below for
+expository purpose):
+
+- **textbook/textbook_as_tibble_20241201.rds**. It contains the Enggano
+  texts and free translations in English and Indonesian, and the
+  source/reference information. This is an R list of data frames/tibbles
+  per text title. (the latest data to use before importing into FLEx
+  whereby I performed further manual on-the-spot post-processing in the
+  newly imported FLEx project)
+
+- **textbook/textbook_as_tibble_20241201-binded.rds**. It is the binded
+  combined version of **textbook/textbook_as_tibble_20241201.rds** into
+  a tibble data. (the latest data to use before importing into FLEx
+  whereby I performed further manual on-the-spot post-processing in the
+  newly imported FLEx project)
+
+- ~~**contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_oct-2024.rds**~~
+  **textbook/textbook_lexicon_as_tibble_20241201.rds**. This is a tibble
+  of interlinearised morpheme-by-morpheme analyses (the latest data to
+  use before importing into FLEx whereby I performed further manual
+  on-the-spot post-processing in the newly imported FLEx project)
+
+### Processing the exported .lift data
+
+#### Input data
+
+The input data file is `textbook/textbook-LIFT-20241201.lift`.
+
+#### Code file/bits
+
+The R code used is
+[`contemporary-enggano-interlinear-text/textbook-LIFT-processing-code.R`](https://github.com/engganolang/eno-flex/blob/main/contemporary-enggano-interlinear-text/textbook-LIFT-processing-code.R).
+
+#### Output/generated file/data
+
+The main output file from processing the .lift file is called
+**textbook/textbook-LIFT-20241201.rds**.
+
+### Processing into Standard Format Marker (SFM) file
+
+#### Input data
+
+The input data uses the generated data from the previous two steps (plus
+data from FLORA and FAUNA \[Details to be updated\]).
+
+#### Code file/bits
+
+There are two main codes:
+
+1.  [contemporary-enggano-interlinear-text/textbook-splitting-code.R](https://github.com/engganolang/eno-flex/blob/main/contemporary-enggano-interlinear-text/textbook-splitting-code.R).
+    This code file split the combined morphemes into their own entry/row
+    for tidy data format. The input data for this code is
+    `textbook/textbook_lexicon_as_tibble_20241201.rds`. This first code
+    file is internally called from the second code below.
+
+2.  [contemporary-enggano-interlinear-text/textbook-SFM.R](https://github.com/engganolang/eno-flex/blob/main/contemporary-enggano-interlinear-text/textbook-SFM.R).
+    This code file calls the
+    [contemporary-enggano-interlinear-text/textbook-splitting-code.R](https://github.com/engganolang/eno-flex/blob/main/contemporary-enggano-interlinear-text/textbook-splitting-code.R).
+    The input data for this second code are as follows:
+
+    - `textbook/textbook-LIFT-20241201.rds` (the output of .lift
+      processing)
+
+    - `textbook/textbook_as_tibble_20241201-binded.rds` (the Enggano
+      phrase/text and its free English and Indonesian translations)
+
+    - Flora and Fauna data \[To be updated!!!\]
+
+#### Output/generated file/data
+
+The main output is an SFM data in .db extension, namely
+**textbook/textbook-dictionary-20241213-no-example-for-same-phrase.db**.
+
+This SFM data is imported into a new FLEx project for the printed
+dictionary. There are several manual post-editing of the entries
+directly in FLEx. There are several notes in the NOTEBOOK feature of
+this FLEx project recording such processes. Also, I manually added
+several cultural items and tools for the subentries into FLEx directly,
+while some other pictures (esp. FLORA and FAUNA, and the pictures of
+root forms of the Cultural Lexicon data) are directly linked through
+coding in the
+[contemporary-enggano-interlinear-text/textbook-SFM.R](https://github.com/engganolang/eno-flex/blob/main/contemporary-enggano-interlinear-text/textbook-SFM.R).
 
 ## On importing to FLEx
 
