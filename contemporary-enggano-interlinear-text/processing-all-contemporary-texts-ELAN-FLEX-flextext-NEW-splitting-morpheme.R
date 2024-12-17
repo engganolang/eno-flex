@@ -70,3 +70,12 @@ eno_morph_split1 |>
   select(-word) |> 
   distinct()
 
+# checking the possessed noun after running the code file ...splitting-morpheme.R
+eno |> filter(str_detect(morph_gloss_en, "[1-3]..\\.POSS$")) |> select(word, morph_gloss_en) |> distinct() |> nrow()
+
+eno |> 
+  filter(str_detect(morph_gloss_en, "[1-3]..\\.POSS$")) |> 
+  select(word, morph_gloss_en) |> 
+  distinct() |> 
+  slice_sample(n = 20)
+
