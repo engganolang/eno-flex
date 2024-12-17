@@ -1,0 +1,53 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: >-
+  R codes and dataset for processing the Enggano FLEx
+  database into the digital and printed Contemporary Enggano
+  dictionary
+message: >-
+  If you use and adapt any materials from this repository,
+  please cite this repository using the metadata from this
+  .cff file as well as the Contemporary Enggano FLEx
+  database
+type: software
+authors:
+  - given-names: Gede Primahadi Wijaya
+    family-names: Rajeg
+    affiliation: University of Oxford & Universitas Udayana
+    orcid: 'https://orcid.org/0000-0002-2047-8621'
+identifiers:
+  - type: url
+    value: 'https://github.com/engganolang/eno-flex'
+    description: GitHub repository
+repository-code: 'https://github.com/engganolang/eno-flex'
+url: 'https://enggano.ling-phil.ox.ac.uk/'
+abstract: >-
+  This repository records the R codes that the author uses
+  to process the LIFT output of FLEx Lexicon and integrate
+  it with the .flextext output of the interlinear texts to
+  build the SFM format to be imported back into FLEx.
+
+
+  These processes are needed to automate the linking between
+  the root and the complex forms (as subentries of the
+  roots), including adding the example sentences (for both
+  the root and subentries) and source references of these
+  examples.
+keywords:
+  - Enggano
+  - R programming
+  - Fieldwork Language Explorer
+  - FLEx
+  - endangered language
+  - Indonesian language
+  - data science
+  - tidyverse
+  - xml
+  - lexical database
+  - lexicography
+  - computational lexicography
+  - dictionary
+  - Enggano dictionary
+license: CC-BY-NC-SA-4.0
