@@ -173,13 +173,17 @@ check_gloss_example <- function(df = NULL,
 lu_form_df <- lu_form_df |> 
   
   mutate(etym = replace(etym,
-                        str_detect(sense_gram, "Indonesian (Verb|Noun)") & 
+                        str_detect(sense_gram, "Indonesian (Verb|Noun|Adjective|Adverb|Preposition)") & 
                           is.na(etym),
-                        "Indonesian Loan"),
+                        "Idn."),
          
          ## fix inconsistent labeling
-         etym = replace(etym, etym == "Indonesian loan",
-                        "Indonesian Loan"),
+         etym = replace(etym, etym  %in%  c("Indonesian loan", "Indonesian Loan"),
+                        "Idn."),
+         etym = replace(etym, grepl("^Loan Word", etym, perl = TRUE), "Loan"),
+         etym = replace(etym, etym  %in% c("Old Indonesian loan", "Old Indonesian Loan"),
+                        "Old Idn."),
+         etym = replace(etym, grepl("Bengkulu Malay", etym), "Bkl."),
          
          ## replace the sense_gram Indonesian Noun/Verb to just Verb or Noun
          # so that it gets recognised in FLEx dictionary view
@@ -1405,29 +1409,36 @@ word_subentry_examples4 <- word_subentry_examples3 |>
   #        vals = replace(vals, vals %in% c("subordconn"), "Subordinating connective"),
   #        vals = replace(vals, vals %in% c("v"), "Verb")) |> 
   
-  mutate(vals = replace(vals, vals %in% c("Adjective"), "adj"),
-         vals = replace(vals, vals %in% c("Adverb"), "adv"),
-         vals = replace(vals, vals %in% c("Auxiliary"), "aux"),
-         vals = replace(vals, vals %in% c("Classifier"), "clf"),
-         vals = replace(vals, vals %in% c("Coordinating connective"), "coordconn"),
-         vals = replace(vals, vals %in% c("Demonstrative"), "dem"),
-         vals = replace(vals, vals %in% c("Interjection"), "interj"),
-         vals = replace(vals, vals %in% c("Interrogative pro-form"), "interog"),
-         vals = replace(vals, vals %in% c("interrog"), "interog"),
-         vals = replace(vals, vals %in% c("Noun", "Indonesian Noun"), "n"),
-         vals = replace(vals, vals %in% c("negation"), "neg"),
-         vals = replace(vals, vals %in% c("Negation"), "neg"),
-         vals = replace(vals, vals %in% c("Proper Noun"), "nprop"),
-         vals = replace(vals, vals %in% c("Numeral"), "num"),
-         vals = replace(vals, vals %in% c("Preposition"), "prep"),
-         vals = replace(vals, vals %in% c("Pro-adverb"), "pro-adv"),
-         vals = replace(vals, vals %in% c("Pro-form"), "pro-form"),
-         vals = replace(vals, vals %in% c("Pronoun"), "pro"),
-         vals = replace(vals, vals %in% c("Particle"), "prt"),
-         vals = replace(vals, vals %in% c("Quantifier"), "quant"),
-         vals = replace(vals, vals %in% c("Relativizer"), "rel"),
-         vals = replace(vals, vals %in% c("Subordinating connective"), "subordconn"),
-         vals = replace(vals, vals %in% c("Verb", "Indonesian Verb"), "v")) |> 
+mutate(vals = replace(vals, vals %in% c("Adjective"), "adj"),
+       vals = replace(vals, vals %in% c("Indonesian Adjective"), "adj (Indo.)"),
+       vals = replace(vals, vals %in% c("Adverb"), "adv"),
+       vals = replace(vals, vals %in% c("Indonesian Adverb"), "adv (Indo.)"),
+       vals = replace(vals, vals %in% c("Auxiliary"), "aux"),
+       vals = replace(vals, vals %in% c("Indonesian Auxiliary"), "aux (Indo.)"),
+       vals = replace(vals, vals %in% c("Classifier"), "clf"),
+       vals = replace(vals, vals %in% c("Coordinating connective"), "coordconn"),
+       vals = replace(vals, vals %in% c("Demonstrative"), "dem"),
+       vals = replace(vals, vals %in% c("Interjection"), "interj"),
+       vals = replace(vals, vals %in% c("Interrogative pro-form"), "interog"),
+       vals = replace(vals, vals %in% c("interrog"), "interog"),
+       vals = replace(vals, vals %in% c("Indonesian Noun"), "n (Indo.)"),
+       vals = replace(vals, vals %in% c("Noun"), "n"),
+       vals = replace(vals, vals %in% c("negation"), "neg"),
+       vals = replace(vals, vals %in% c("Negation"), "neg"),
+       vals = replace(vals, vals %in% c("Proper Noun"), "nprop"),
+       vals = replace(vals, vals %in% c("Numeral"), "num"),
+       vals = replace(vals, vals %in% c("Indonesian Numeral"), "num (Indo.)"),
+       vals = replace(vals, vals %in% c("Preposition"), "prep"),
+       vals = replace(vals, vals %in% c("Indonesian Preposition"), "prep (Indo.)"),
+       vals = replace(vals, vals %in% c("Pro-adverb"), "pro-adv"),
+       vals = replace(vals, vals %in% c("Pro-form"), "pro-form"),
+       vals = replace(vals, vals %in% c("Pronoun"), "pro"),
+       vals = replace(vals, vals %in% c("Particle"), "prt"),
+       vals = replace(vals, vals %in% c("Quantifier"), "quant"),
+       vals = replace(vals, vals %in% c("Relativizer"), "rel"),
+       vals = replace(vals, vals %in% c("Subordinating connective"), "subordconn"),
+       vals = replace(vals, vals %in% c("Verb"), "v"),
+       vals = replace(vals, vals %in% c("Indonesian Verb"), "v (Indo.)")) |> 
   
   # edit the marker for the sub-entries
   mutate(marker_deleted = str_replace_all(marker, "^sew_+\\d\\d$", "se"),
