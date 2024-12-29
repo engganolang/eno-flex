@@ -8,16 +8,275 @@
 # Gede Rajeg (University of Oxford & Udayana University; 2023)
 
 library(tidyverse)
+library(stringi)
 
-# lu_form_df <- read_rds("FLEX-lift-pre-fieldwork.rds")
-lu_form_df <- read_rds("FLEX-lift-march-2024.rds")
+# lu_form_df <- read_rds("output/contemporary/lift/FLEX-lift-pre-fieldwork.rds")
+# lu_form_df <- read_rds("output/contemporary/lift/FLEX-lift-march-2024.rds")
+lu_form_df <- read_rds("output/contemporary/lift/FLEX-lift-2024-12-28.rds") |> 
+  mutate(sense_gloss_idn = replace(sense_gloss_idn, sense_gloss_idn == "pelapah nibung", "pelepah nibung")) |> 
+  mutate(sense_gloss_en = replace(sense_gloss_en, sense_gloss_en == "land turtle" & form == "anu'un", "turtoise; land turtle")) |> 
+  mutate(sense_gloss_en = replace(sense_gloss_en, sense_gloss_en == "a sea creature" & form == stri_trans_nfc("kahẽ"), "bristle worm")) |> 
+  mutate(sense_gloss_idn = replace(sense_gloss_idn, sense_gloss_idn == "binatang laut yang berduri berbisa" & form == stri_trans_nfc("kahẽ"), "cacing berbulu (Polychaeta) atau masyarakat Enggano menyebutnya 'jelatang laut'"))
 source("contemporary-enggano-interlinear-text/processing-all-contemporary-texts-ELAN-FLEX-flextext-NEW-splitting-morpheme.R")
-# eno_elicitation_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-binded.rds")
-eno_elicitation_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-binded-march2024.rds")
-# eno_natural_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded.rds")
-eno_natural_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded-march2024.rds")
+# eno_elicitation_texts <- read_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-new-binded.rds")
+# eno_elicitation_texts <- read_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-new-binded-march2024.rds")
+eno_elicitation_texts <- read_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-binded-2024-12-28.rds")
+# eno_natural_texts <- read_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-new-binded.rds")
+# eno_natural_texts <- read_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-new-binded-march2024.rds")
+eno_natural_texts <- read_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-binded-2024-12-28.rds")
+eno_textbook_texts <- read_rds("output/textbook/interlinear/textbook_as_tibble_20241201-binded.rds")
 
-# list of proper name to exclude from the entries
+# read flora and fauna data =====
+flora_df1 <- read_rds("G:/.shortcut-targets-by-id/1MO3Q9KZIODxlfPRyjLTtDUZuVkecFBp6/Enggano/enggano-dictionary/flora-fauna/output/flora_df1.rds") |> 
+  mutate(ENGGANO = replace(ENGGANO, ENGGANO == "barkayė", "bakayė")) |> 
+  # mutate(ENGGANO = replace(ENGGANO, ENGGANO == "pėkã po", "pėkã")) |> 
+  mutate(ENGGANO = replace(ENGGANO, ENGGANO == "apua", "apu"),
+         PHONEME = replace(PHONEME, ENGGANO == "apu", "/apu/")) |> 
+  mutate(ENGLISH = replace(ENGLISH, ENGLISH == "clove" & ENGGANO == "teke", "cloves")) |> 
+  mutate(MAIN_ENTRY_EN = replace(MAIN_ENTRY_EN, MAIN_ENTRY_EN == "kokonut", "coconut")) |> 
+  filter(is.na(INCLUDE)) |> 
+  filter(ENGGANO != "kė'ėh")
+## flora data that is (i) in FLEx, (ii) to include, (iii) has ONE sense, (iv) is LEXICAL ENTRY/ROOT, and (v) has picture=====
+fl1 <- flora_df1 |> # in FLEx lexicon as a root/lexical entry with sense as sense no 1/sn_0 and has picture
+  filter(IN_FLEX=="y", is.na(INCLUDE), is.na(SENSE_ID), is.na(MAIN_ENTRY), pc != "") |> 
+  mutate(ENGGANO = stri_trans_nfc(ENGGANO)) |> 
+  filter(!ENGGANO %in% c("arkih", "atam", stri_trans_nfc("na'inė"), "ke'")) |>
+  select(lx = ENGGANO, ge_0 = ENGLISH, gn_0 = INDONESIAN, pc_0 = pc, nt_0 = NOTES_EN, nt_ID_0 = NOTES_ID, cf = CROSSREF, variant1 = VARIANT)
+fl1_ID <- flora_df1 |> # in FLEx lexicon as a root/lexical entry with sense as sense no 1/sn_0 and has picture
+  filter(IN_FLEX=="y", is.na(INCLUDE), is.na(SENSE_ID), is.na(MAIN_ENTRY), pc != "") |> 
+  mutate(ENGGANO = stri_trans_nfc(ENGGANO)) |> 
+  filter(!ENGGANO %in% c("arkih", "atam", stri_trans_nfc("na'inė"), "ke'")) |> 
+  pull(NO)
+fl1_no_pict <- flora_df1 |> # in FLEx lexicon as a root/lexical entry with sense as sense no 1/sn_0 but NO PICTURE (so we can ignore)
+  filter(IN_FLEX=="y", is.na(INCLUDE), is.na(SENSE_ID), is.na(MAIN_ENTRY), pc == "") |> 
+  mutate(ENGGANO = stri_trans_nfc(ENGGANO),
+         ENGLISH = replace(ENGLISH, stri_trans_nfc(ENGGANO) == stri_trans_nfc("kãtã") & ENGLISH == "peanut", "nut"))
+fl1_1 <- flora_df1 |> # in FLEx lexicon as a root/lexical entry with sense as sense no 2/sn_1 and has picture
+  filter(IN_FLEX=="y", is.na(INCLUDE), is.na(SENSE_ID), is.na(MAIN_ENTRY), pc != "") |> 
+  mutate(ENGGANO = stri_trans_nfc(ENGGANO)) |> 
+  filter(ENGGANO %in% c("arkih", "atam", stri_trans_nfc("na'inė"), "ke'"))  |>
+  select(lx = ENGGANO, ge_1 = ENGLISH, gn_1 = INDONESIAN, pc_1 = pc, nt_1 = NOTES_EN, nt_ID_1 = NOTES_ID, cf = CROSSREF, variant2 = VARIANT)
+fl1_1_ID <- flora_df1 |> # in FLEx lexicon as a root/lexical entry with sense as sense no 2/sn_1 and has picture
+  filter(IN_FLEX=="y", is.na(INCLUDE), is.na(SENSE_ID), is.na(MAIN_ENTRY), pc != "") |> 
+  mutate(ENGGANO = stri_trans_nfc(ENGGANO)) |> 
+  filter(ENGGANO %in% c("arkih", "atam", stri_trans_nfc("na'inė"), "ke'"))  |>
+  pull(NO)
+## flora data (i) not marked as in FLEx, (ii) has picture, and (iii) as a root/lexical entry =====
+fl_no_flex <- flora_df1 |> 
+  filter(is.na(IN_FLEX),
+         pc != "",
+         is.na(MAIN_ENTRY)) |> 
+  mutate(ENGGANO = stringi::stri_trans_nfc(ENGGANO))
+### double check again which forms are in FLEx ====
+fl_no_flex$ENGGANO[fl_no_flex$ENGGANO %in% lu_form_df$form]
+### [1] "awa'" (move to IN_FLEX == "y")  "ke'" (added as the second sense, should be in FLEX as ge_1, gn_1)   "ubi'"  "pėk" (added manually to FLEx after this code, should be IN_FLEX)   "yohob" (added manually to FLEx after this code, should be in FLEx)
+### ke' is glossed as 'jenis kayu'/'tree species' in FLEx - in here, use the gloss 'duri rotan'/'rattan thorns' as the second gloss (ge_1, gn_1)
+fl_no_flex1_with_pict <- fl_no_flex |> 
+  mutate(entry_id = str_c("DW_Flora_", NO, sep = ""),
+         POS = replace(POS, POS == "n", "Noun")) |> 
+  select(entry_id, lx = ENGGANO, ps_0 = POS, ge_0 = ENGLISH, gn_0 = INDONESIAN, pc_0 = pc, nt_0 = NOTES_EN, nt_ID_0 = NOTES_ID, cf = CROSSREF, va_1 = VARIANT) |> 
+  select(where(function(x) any(!is.na(x))))
+fl_no_flex1_with_pict_ID <-  fl_no_flex |> 
+  pull(NO)
+
+fl_subentry_with_picture <- flora_df1 |> 
+  filter(!NO %in% c(fl1_ID, fl1_1_ID, fl_no_flex1_with_pict_ID)) |> 
+  # filter(pc != "") |> 
+  filter(!is.na(MAIN_ENTRY)) |> 
+  mutate(ENGGANO = stri_trans_nfc(ENGGANO),
+         MAIN_ENTRY = stri_trans_nfc(MAIN_ENTRY))
+fl_subentry_mainEntry <- fl_subentry_with_picture |> 
+  select(matches("MAIN_ENTRY")) |> 
+  distinct() |> 
+  select(lx = MAIN_ENTRY, ge_0 = MAIN_ENTRY_EN, gn_0 = MAIN_ENTRY_IDN) |> 
+  mutate(ge_1 = if_else(lx == stri_trans_nfc("na'inė"), ge_0, ""),
+         gn_1 = if_else(lx == stri_trans_nfc("na'inė"), gn_0, ""),
+         ge_4 = if_else(lx == stri_trans_nfc("kũk"), ge_0, ""),
+         gn_4 = if_else(lx == stri_trans_nfc("kũk"), gn_0, "")) |> 
+  mutate(ge_0 = if_else(ge_1 != "", "", ge_0),
+         gn_0 = if_else(gn_1 != "", "", gn_0),
+         ge_0 = if_else(ge_4 != "", "", ge_0),
+         gn_0 = if_else(gn_4 != "", "", gn_0))
+fl_subentry_with_picture_ID <- fl_subentry_with_picture$NO
+fl_subentry_with_picture <- fl_subentry_with_picture |> 
+  select(se = ENGGANO, se_cf = CROSSREF, se_ps = POS, se_ge = ENGLISH, se_gn = INDONESIAN, se_pc = pc, lx = MAIN_ENTRY, ge_0 = MAIN_ENTRY_EN, gn_0 = MAIN_ENTRY_IDN, se_nt = NOTES_EN, se_nt_ID = NOTES_ID, se_va = VARIANT) |> 
+  mutate(ge_1 = if_else(lx == stri_trans_nfc("na'inė"), ge_0, ""),
+         gn_1 = if_else(lx == stri_trans_nfc("na'inė"), gn_0, ""),
+         ge_4 = if_else(lx == stri_trans_nfc("kũk"), ge_0, ""),
+         gn_4 = if_else(lx == stri_trans_nfc("kũk"), gn_0, "")) |> 
+  mutate(across(where(is.character), ~replace_na(., "")))
+
+fl_se_g0 <- fl_subentry_with_picture |> 
+  mutate(se_flora = paste0(se, "\n\\cf_se ", se_cf, "\n\\va_se ", se_va, "\n\\ps ", se_ps, "\n\\ge ", se_ge, "\n\\gn ", se_gn, "\n\\pc ", se_pc, "\n\\sec ", se_nt, "\n\\sec_ID ", se_nt_ID, "\n\\se", sep = "")) |> 
+  select(lx, matches("^g.*_0|se_flora")) |> 
+  filter(ge_0 != "") |> 
+  distinct() |> 
+  group_by(lx, ge_0, gn_0) |> 
+  mutate(se_flora_1 = paste0(se_flora, collapse = " ")) |> 
+  select(-se_flora) |> 
+  ungroup() |> 
+  distinct() |> 
+  filter(ge_0 != "")  |> 
+  mutate(se_flora_1 =  str_replace_all(se_flora_1, "(?<=\\n)[^ ]+?\\s\\n", ""),
+         se_flora_1 =  str_replace_all(se_flora_1, "\\\\se$", ""))
+
+fl_se_g1 <- fl_subentry_with_picture |> 
+  mutate(se_flora = paste0(se, "\n\\cf_se ", se_cf, "\n\\va_se ", se_va, "\n\\ps ", se_ps, "\n\\ge ", se_ge, "\n\\gn ", se_gn, "\n\\pc ", se_pc, "\n\\sec ", se_nt, "\n\\sec_ID ", se_nt_ID, "\n\\se", sep = "")) |> 
+  select(lx, matches("^g.*_1|se_flora")) |> 
+  distinct() |> 
+  group_by(lx, ge_1, gn_1) |> 
+  mutate(se_flora_2 = paste0(se_flora, collapse = " ")) |> 
+  select(-se_flora) |> 
+  distinct() |> 
+  filter(ge_1 != "") |> 
+  mutate(se_flora_2 =  str_replace_all(se_flora_2, "((?<=\\n)[^ ]+?\\s\\n|\\\\se$)", ""))
+
+fl_se_g4 <- fl_subentry_with_picture |> 
+  mutate(se_flora = paste0(se, "\n\\cf_se ", se_cf, "\n\\va_se ", se_va, "\n\\ps ", se_ps, "\n\\ge ", se_ge, "\n\\gn ", se_gn, "\n\\pc ", se_pc, "\n\\sec ", se_nt, "\n\\sec_ID ", se_nt_ID, "\n\\se", sep = "")) |> 
+  select(lx, matches("^g.*_4|se_flora")) |> 
+  distinct() |> 
+  group_by(lx, ge_4, gn_4) |> 
+  mutate(se_flora_3 = paste0(se_flora, collapse = " ")) |> 
+  select(-se_flora) |> 
+  distinct() |> 
+  filter(ge_4 != "")  |> 
+  mutate(se_flora_3 = str_replace_all(se_flora_3, "((?<=\\n)[^ ]+?\\s\\n|\\\\se$)", ""))
+
+
+fl_residu <- flora_df1 |> 
+  filter(!NO %in% c(fl1_ID, fl1_1_ID
+                    ,
+                    fl_no_flex1_with_pict_ID,
+                    fl_subentry_with_picture_ID
+  )) |> 
+  filter(is.na(IN_FLEX)) |> 
+  mutate(entry_id = str_c("DW_Flora_", NO, sep = "")) |> 
+  select(entry_id,
+         lx = ENGGANO,
+         ps_0 = POS,
+         va_1 = VARIANT,
+         cf = CROSSREF,
+         ge_0 = ENGLISH,
+         gn_0 = INDONESIAN,
+         nt_0 = NOTES_EN,
+         nt_ID_0 = NOTES_ID) |> 
+  mutate(across(where(is.character), ~replace_na(., ""))) |> 
+  select(where(function(x) any(x != "") == TRUE))
+
+
+## FAUNA data ====
+fauna_df1 <- read_rds("G:/.shortcut-targets-by-id/1MO3Q9KZIODxlfPRyjLTtDUZuVkecFBp6/Enggano/enggano-dictionary/flora-fauna/output/fauna_df1.rds") |> 
+  filter(is.na(INCLUDE)) |> 
+  mutate(ENGGANO = stri_trans_nfc(ENGGANO),
+         MAIN_ENTRY = stri_trans_nfc(MAIN_ENTRY)) |> 
+  mutate(ENGLISH = replace(ENGLISH, ENGLISH == "turtoise", "turtoise; land turtle"),
+         ENGLISH = replace(ENGLISH, INDONESIAN == "beo", "parrot"),
+         NOTES_EN = replace(NOTES_EN, INDONESIAN == "beo", "Hill Myna (Gracula religiosa)")) |> 
+  filter(ENGGANO != "pururu") |> 
+  filter(ENGGANO != "puru") |> 
+  filter(ENGGANO != "kab") |> 
+  filter(ENGGANO != "aham") |> 
+  filter(ENGGANO != "iuk")
+
+### Fauna with picture NOT SUBENTRY/NO MAIN ENTRY=====
+fn1_with_pict_lexentry_non_in_flex <- fauna_df1 |> 
+  filter(is.na(MAIN_ENTRY), pc != "", is.na(IN_FLEX))
+fn1_with_pict_lexentry_non_in_flex_ID <- fn1_with_pict_lexentry_non_in_flex$NO
+fn1_with_pict_lexentry_in_flex <- fauna_df1 |> 
+  filter(is.na(MAIN_ENTRY), pc != "", IN_FLEX == "y")
+fn1 <- fn1_with_pict_lexentry_in_flex |> # in FLEx lexicon as a root/lexical entry with sense as sense no 1/sn_0 and has picture
+  filter(!ENGGANO %in% c("mana'ai")) |>
+  select(lx = ENGGANO, ge_0 = ENGLISH, gn_0 = INDONESIAN, pc_0 = pc, nt_0 = NOTES_EN, nt_ID_0 = NOTES_ID, cf = CROSSREF, variant1 = VARIANT) |> 
+  mutate(across(where(is.character), ~replace_na(., "")))
+fn1_ID <- fn1_with_pict_lexentry_in_flex |> # in FLEx lexicon as a root/lexical entry with sense as sense no 1/sn_0 and has picture
+  filter(!ENGGANO %in% c("mana'ai")) |> 
+  pull(NO)
+fn1_1 <- fn1_with_pict_lexentry_in_flex |> # in FLEx lexicon as a root/lexical entry with sense as sense no 1/sn_0 and has picture
+  filter(ENGGANO %in% c("mana'ai")) |>
+  select(lx = ENGGANO, ge_1 = ENGLISH, gn_1 = INDONESIAN, pc_1 = pc, nt_1 = NOTES_EN, nt_ID_1 = NOTES_ID, cf = CROSSREF, variant2 = VARIANT) |> 
+  mutate(across(where(is.character), ~replace_na(., "")))
+fn1_1_ID <- fn1_with_pict_lexentry_in_flex |> # in FLEx lexicon as a root/lexical entry with sense as sense no 1/sn_0 and has picture
+  filter(ENGGANO %in% c("mana'ai")) |> 
+  pull(NO)
+fn1_with_pict_lexentry_non_in_flex2 <- fn1_with_pict_lexentry_non_in_flex |> 
+  mutate(entry_id = str_c("DW_Fauna_", NO, sep = ""),
+         POS = replace(POS, POS == "n", "Noun")) |> 
+  select(entry_id, lx = ENGGANO, ps_0 = POS, ge_0 = ENGLISH, gn_0 = INDONESIAN, pc_0 = pc, nt_0 = NOTES_EN, nt_ID_0 = NOTES_ID, cf = CROSSREF, va_1 = VARIANT) |> 
+  select(where(function(x) any(!is.na(x)))) |> 
+  mutate(across(where(is.character), ~replace_na(., "")))
+fn1_residu <- fauna_df1 |> 
+  filter(!NO %in% c(fn1_ID, fn1_1_ID, fn1_with_pict_lexentry_non_in_flex_ID))
+
+### FAUNA with SUBENTRY=====
+fn1_residu_se <- fn1_residu |> 
+  filter(!is.na(MAIN_ENTRY))
+fn1_residu_se_mainentry <- fn1_residu_se |> select(MAIN_ENTRY, MAIN_ENTRY_EN, MAIN_ENTRY_IDN) |> distinct()
+fn1_residu_se1 <- fn1_residu_se |> 
+  select(se = ENGGANO, se_cf = CROSSREF, se_ps = POS, se_ge = ENGLISH, se_gn = INDONESIAN, se_pc = pc, lx = MAIN_ENTRY, ge_0 = MAIN_ENTRY_EN, gn_0 = MAIN_ENTRY_IDN, se_nt = NOTES_EN, se_nt_ID = NOTES_ID, se_va = VARIANT) |> 
+  mutate(ge_1 = if_else(lx == stri_trans_nfc("puru"), ge_0, ""),
+         gn_1 = if_else(lx == stri_trans_nfc("puru"), gn_0, "")) |> 
+  mutate(ge_0 = if_else(ge_1 != "", "", ge_0),
+         gn_0 = if_else(gn_1 != "", "", gn_0)) |> 
+  mutate(across(where(is.character), ~replace_na(., "")))
+fn_se_g0 <- fn1_residu_se1 |> 
+  mutate(se_fauna = paste0(se, "\n\\cf_se ", se_cf, "\n\\va_se ", se_va, "\n\\ps ", se_ps, "\n\\ge ", se_ge, "\n\\gn ", se_gn, "\n\\pc ", se_pc, "\n\\sec ", se_nt, "\n\\sec_ID ", se_nt_ID, "\n\\se", sep = "")) |> 
+  select(lx, matches("^g.*_0|se_fauna")) |> 
+  filter(ge_0 != "") |> 
+  distinct() |> 
+  group_by(lx, ge_0, gn_0) |> 
+  mutate(se_fauna_1 = paste0(se_fauna, collapse = " ")) |> 
+  select(-se_fauna) |> 
+  ungroup() |> 
+  distinct() |> 
+  filter(ge_0 != "")  |> 
+  mutate(se_fauna_1 =  str_replace_all(se_fauna_1, "(?<=\\n)[^ ]+?\\s\\n", ""),
+         se_fauna_1 =  str_replace_all(se_fauna_1, "\\\\se$", ""))
+fn_se_g1 <- fn1_residu_se1 |> 
+  mutate(se_fauna = paste0(se, "\n\\cf_se ", se_cf, "\n\\va_se ", se_va, "\n\\ps ", se_ps, "\n\\ge ", se_ge, "\n\\gn ", se_gn, "\n\\pc ", se_pc, "\n\\sec ", se_nt, "\n\\sec_ID ", se_nt_ID, "\n\\se", sep = "")) |> 
+  select(lx, matches("^g.*_1|se_fauna")) |> 
+  distinct() |> 
+  group_by(lx, ge_1, gn_1) |> 
+  mutate(se_fauna_2 = paste0(se_fauna, collapse = " ")) |> 
+  select(-se_fauna) |> 
+  distinct() |> 
+  filter(ge_1 != "") |> 
+  mutate(se_fauna_2 =  str_replace_all(se_fauna_2, "((?<=\\n)[^ ]+?\\s\\n|\\\\se$)", ""))
+fn1_residu_se_ID <- fn1_residu_se$NO
+fn1_residu_1 <- fauna_df1 |> 
+  filter(!NO %in% c(fn1_ID, fn1_1_ID, fn1_with_pict_lexentry_non_in_flex_ID, fn1_residu_se_ID))
+fn1_residu_not_in_flex <- fn1_residu_1 |> 
+  filter(is.na(IN_FLEX)) |> 
+  filter(is.na(MAIN_ENTRY)) |> # no main entry
+  mutate(entry_id = str_c("DW_Fauna_", NO, sep = "")) |> 
+  select(entry_id,
+         lx = ENGGANO,
+         ps_0 = POS,
+         va_1 = VARIANT,
+         cf = CROSSREF,
+         ge_0 = ENGLISH,
+         gn_0 = INDONESIAN,
+         nt_0 = NOTES_EN,
+         nt_ID_0 = NOTES_ID) |> 
+  mutate(across(where(is.character), ~replace_na(., ""))) |> 
+  select(where(function(x) any(x != "") == TRUE))
+
+## Cultural data ====
+cullex_ge0_root <- read_rds("../Enggano-Fieldwork/2nd-fieldwork-2024-02-01/cultlex_with_pict_ge0.rds") |> 
+  filter(morph_type == "root") |> 
+  mutate(across(matches("^(word|lx)$"), ~stri_trans_nfc(.)))
+cullex_ge0_complex <- read_rds("../Enggano-Fieldwork/2nd-fieldwork-2024-02-01/cultlex_with_pict_ge0.rds") |> 
+  filter(morph_type != "root") |> 
+  mutate(word = replace(word, word %in% "aroro' yakare", "aroro'")) |> 
+  mutate(across(matches("^(word|lx)$"), ~stri_trans_nfc(.)))
+cullex_ge1_root <- read_rds("../Enggano-Fieldwork/2nd-fieldwork-2024-02-01/cultlex_with_pict_ge1.rds") |> 
+  filter(morph_type == "root") |> 
+  mutate(lx = replace(lx, gn_1 == "rawa-rawa", "'ẽõ")) |> 
+  mutate(across(matches("^(word|lx)$"), ~stri_trans_nfc(.)))
+cullex_ge1_complex <- read_rds("../Enggano-Fieldwork/2nd-fieldwork-2024-02-01/cultlex_with_pict_ge1.rds") |> 
+  filter(morph_type != "root") |> 
+  mutate(across(matches("^(word|lx)$"), ~stri_trans_nfc(.)))
+
+# list of proper name to exclude from the entries =======================
 person_entries <- c("Ga", "Engga", "Gede", "Charlotte", "Bill",
                     "Dendi", "Daniel", "Mary", "Bill", "Aron",
                     "Andi", "Adam", "Ali", "Indonesia", "Inggris",
@@ -210,7 +469,9 @@ source("contemporary-enggano-interlinear-text/gloss_fixing.R")
 
 eno_example_references <- eno_elicitation_texts |> 
   select(text_title, phrase_id, phrase_line) |> 
-  bind_rows(eno_natural_texts |> 
+  bind_rows(eno_natural_texts |> # combine the natural texts
+              select(text_title, phrase_id, phrase_line)) |> 
+  bind_rows(eno_textbook_texts |> # combine the textbook texts
               select(text_title, phrase_id, phrase_line)) |> 
   mutate(across(where(is.character), ~str_replace_all(., "_+", "."))) |> 
   mutate(across(matches("(^eno_phrase|)"), ~str_replace_all(., "\\s{2,}", " ")), 
@@ -1474,8 +1735,8 @@ word_subentry_examples4 |>
   filter(str_detect(lx_key, "^[0-9]+$", TRUE)) # |> 
   # pull(sfm) |> 
   # filter(lx_key %in% tes_lex) |>
-  # write_lines("FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples.db")
-  # write_lines("FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples-2024-07-17.db")
+  # write_lines("output/contemporary/sfm/FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples.db")
+  # write_lines("output/contemporary/sfm/FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples-2024-07-17.db")
 
 
 
