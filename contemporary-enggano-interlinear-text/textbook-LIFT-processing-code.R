@@ -5,10 +5,11 @@ library(tidyverse)
 library(xml2)
 library(stringi)
 
-# flexdb <- read_xml("contemporary-enggano-interlinear-text/textbook-LIFT.lift") # Textbook processing
-# flexdb <- read_xml("contemporary-enggano-interlinear-text/textbook-LIFT-20241110.lift") # Textbook processing
-# flexdb <- read_xml("contemporary-enggano-interlinear-text/textbook-LIFT-20241129.lift") # Textbook processing
-flexdb <- read_xml("textbook/textbook-LIFT-20241201.lift") # Textbook processing
+# flexdb <- read_xml("input/textbook/lift/textbook-LIFT.lift") # Textbook processing
+# flexdb <- read_xml("input/textbook/lift/textbook-LIFT-20241110.lift") # Textbook processing
+# flexdb <- read_xml("input/textbook/lift/textbook-LIFT-20241129.lift") # Textbook processing
+flexdb <- read_xml("input/textbook/lift/textbook-LIFT-20241201.lift") # Textbook processing
+
 
 # MAIN ENTRY ======
 
@@ -388,8 +389,7 @@ fauna_root_in_flex_with_image <- fauna_df1 |>
 # notes_text_df
 
 
-# write_rds(lu_form_df, "FLEX-lift-pre-fieldwork.rds")
-# write_rds(lu_form_df, "contemporary-enggano-interlinear-text/textbook-LIFT.rds")
-# write_rds(lu_form_df, "contemporary-enggano-interlinear-text/textbook-LIFT-20241110.rds")
-# write_rds(lu_form_df, "contemporary-enggano-interlinear-text/textbook-LIFT-20241129.rds")
-write_rds(lu_form_df, "textbook/textbook-LIFT-20241201.rds")
+# write_rds(lu_form_df, "output/textbook/lift/textbook-LIFT.rds")
+# write_rds(lu_form_df, "output/textbook/lift/textbook-LIFT-20241110.rds")
+# write_rds(lu_form_df, "output/textbook/lift/textbook-LIFT-20241129.rds")
+write_rds(lu_form_df, "output/textbook/lift/textbook-LIFT-20241201.rds")

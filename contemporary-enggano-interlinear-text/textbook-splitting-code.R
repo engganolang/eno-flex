@@ -6,9 +6,9 @@ library(stringi)
 # Textbook materials ======
 
 ## read the saved tibble
-# eno_file_textbook <- "contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_nov-2024.rds"
-# eno_file_textbook <- "contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_20241129.rds"
-eno_file_textbook <- "textbook/textbook_lexicon_as_tibble_20241201.rds"
+# eno_file_textbook <- "output/textbook/interlinear/textbook_lexicon_as_tibble_nov-2024.rds"
+# eno_file_textbook <- "output/textbook/interlinear/textbook_lexicon_as_tibble_20241129.rds"
+eno_file_textbook <- "output/textbook/interlinear/textbook_lexicon_as_tibble_20241201.rds"
 eno_tbook <- read_rds(eno_file_textbook) |> 
   list_rbind()
 

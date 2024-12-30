@@ -1,28 +1,28 @@
 library(tidyverse)
 library(stringi)
 
-# lu_form_df <- read_rds("FLEX-lift-pre-fieldwork.rds")
-# lu_form_df <- read_rds("FLEX-lift-march-2024.rds") 
-# lu_form_df <- read_rds("contemporary-enggano-interlinear-text/textbook-LIFT.rds")
-# lu_form_df <- read_rds("contemporary-enggano-interlinear-text/textbook-LIFT-20241110.rds")
-# lu_form_df <- read_rds("contemporary-enggano-interlinear-text/textbook-LIFT-20241129.rds")
-lu_form_df <- read_rds("textbook/textbook-LIFT-20241201.rds") |> 
+# lu_form_df <- read_rds("output/contemporary/lift/FLEX-lift-pre-fieldwork.rds")
+# lu_form_df <- read_rds("output/contemporary/lift/FLEX-lift-march-2024.rds") 
+# lu_form_df <- read_rds("output/textbook/lift/textbook-LIFT.rds")
+# lu_form_df <- read_rds("output/textbook/lift/textbook-LIFT-20241110.rds")
+# lu_form_df <- read_rds("output/textbook/lift/textbook-LIFT-20241129.rds")
+lu_form_df <- read_rds("output/textbook/lift/textbook-LIFT-20241201.rds") |> 
   mutate(sense_gloss_idn = replace(sense_gloss_idn, sense_gloss_idn == "pelapah nibung", "pelepah nibung")) |> 
   mutate(sense_gloss_en = replace(sense_gloss_en, sense_gloss_en == "land turtle" & form == "anu'un", "turtoise; land turtle")) |> 
   mutate(sense_gloss_en = replace(sense_gloss_en, sense_gloss_en == "a sea creature" & form == stri_trans_nfc("kahẽ"), "bristle worm")) |> 
   mutate(sense_gloss_idn = replace(sense_gloss_idn, sense_gloss_idn == "binatang laut yang berduri berbisa" & form == stri_trans_nfc("kahẽ"), "cacing berbulu (Polychaeta) atau masyarakat Enggano menyebutnya 'jelatang laut'"))
 source("contemporary-enggano-interlinear-text/textbook-splitting-code.R")
-# eno_elicitation_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-binded.rds")
-# eno_elicitation_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-binded-march2024.rds")
-# eno_natural_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded.rds")
-# eno_natural_texts <- read_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded-march2024.rds")
-# eno_textbook_texts <- read_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_oct-2024-binded.rds")
-# eno_textbook_texts <- read_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_nov-2024-binded.rds")
-# eno_textbook_texts <- read_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_20241129-binded.rds")
-eno_textbook_texts <- read_rds("textbook/textbook_as_tibble_20241201-binded.rds")
+# eno_elicitation_texts <- read_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-new-binded.rds")
+# eno_elicitation_texts <- read_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-new-binded-march2024.rds")
+# eno_natural_texts <- read_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-new-binded.rds")
+# eno_natural_texts <- read_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-new-binded-march2024.rds")
+# eno_textbook_texts <- read_rds("output/textbook/interlinear/textbook_as_tibble_oct-2024-binded.rds")
+# eno_textbook_texts <- read_rds("output/textbook/interlinear/textbook_as_tibble_nov-2024-binded.rds")
+# eno_textbook_texts <- read_rds("output/textbook/interlinear/textbook_as_tibble_20241129-binded.rds")
+eno_textbook_texts <- read_rds("output/textbook/interlinear/textbook_as_tibble_20241201-binded.rds")
 
 # read flora and fauna data =====
-flora_df1 <- read_rds("G:/.shortcut-targets-by-id/1MO3Q9KZIODxlfPRyjLTtDUZuVkecFBp6/Enggano/enggano-dictionary/flora-fauna/flora_df1.rds") |> 
+flora_df1 <- read_rds("G:/.shortcut-targets-by-id/1MO3Q9KZIODxlfPRyjLTtDUZuVkecFBp6/Enggano/enggano-dictionary/flora-fauna/output/flora_df1.rds") |> 
   mutate(ENGGANO = replace(ENGGANO, ENGGANO == "barkayė", "bakayė")) |> 
   # mutate(ENGGANO = replace(ENGGANO, ENGGANO == "pėkã po", "pėkã")) |> 
   mutate(ENGGANO = replace(ENGGANO, ENGGANO == "apua", "apu"),
@@ -160,7 +160,7 @@ fl_residu <- flora_df1 |>
 
 
 ## FAUNA data ====
-fauna_df1 <- read_rds("G:/.shortcut-targets-by-id/1MO3Q9KZIODxlfPRyjLTtDUZuVkecFBp6/Enggano/enggano-dictionary/flora-fauna/fauna_df1.rds") |> 
+fauna_df1 <- read_rds("G:/.shortcut-targets-by-id/1MO3Q9KZIODxlfPRyjLTtDUZuVkecFBp6/Enggano/enggano-dictionary/flora-fauna/output/fauna_df1.rds") |> 
   filter(is.na(INCLUDE)) |> 
   mutate(ENGGANO = stri_trans_nfc(ENGGANO),
          MAIN_ENTRY = stri_trans_nfc(MAIN_ENTRY)) |> 
@@ -1884,13 +1884,13 @@ word_subentry_examples4 |>
   # mutate(sfm = str_replace(sfm, "\\\\rf\\s\\n(?=\\\\pc)", "")) |> 
   pull(sfm) |>
 # filter(lx_key %in% tes_lex) |>
-# write_lines("FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples.db")
-# write_lines("FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples-2024-07-17.db")
-# write_lines("Textbook-dictionary.db")
-# write_lines("Textbook-dictionary-20241110.db")
-# write_lines("Textbook-dictionary-20241129-no-example-for-same-phrase.db")
-write_lines("textbook/textbook-dictionary-20241213-no-example-for-same-phrase.db")
+# write_lines("output/contemporary/sfm/FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples.db")
+# write_lines("output/contemporary/sfm/FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples-2024-07-17.db")
+# write_lines("output/textbook/sfm/Textbook-dictionary.db")
+# write_lines("output/textbook/sfm/Textbook-dictionary-20241110.db")
+# write_lines("output/textbook/sfm/Textbook-dictionary-20241129-no-example-for-same-phrase.db")
+write_lines("output/textbook/sfm/textbook/textbook-dictionary-20241213-no-example-for-same-phrase.db")
 
 
 
-# write_lines(pull(word_subentry_examples4, sfm), "FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples-with-references.db")
+# write_lines(pull(word_subentry_examples4, sfm), "output/contemporary/sfm/FLEX-lexicon-with-sub-entries-and-root-and-subentries-examples-with-references.db")
