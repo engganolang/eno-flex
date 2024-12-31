@@ -1,4 +1,4 @@
-# To generate data for Pak Cok's system, run the codes in "...flextext-NEW-SFM.R" from line 10 until line 325. Then run the following codes from line 2 to 133. Then skip over the codes inside "OLD CODES" and go to section 4. debuging
+# To generate data for Pak Cok's system, run the codes in "...flextext-NEW-SFM.R" from line 10 until line 325 (i.e., the point before the section called "1. Processing root/main entry"). Then run the following codes from line 2 to 133. Then skip over the codes inside "OLD CODES" and go to section 4. debuging
 library(stringi)
 flex_from_text1 <- flex_from_text |> 
   mutate(homonym_id = replace(homonym_id, homonym_id == "", "0")) |> 
@@ -18,22 +18,25 @@ flex_from_text1 <- flex_from_text |>
          morph_id = replace(morph_id, morph == "-menan" & morph_gloss_en == "dig", "d7f713e8-e8cf-11d3-9764-00c04f186933"),
          morph = replace(morph, morph == "-menan" & morph_gloss_en == "dig", "enan"),
          
-         morph_gloss_en = replace(morph_gloss_en, lex_entry == stri_trans_nfc("kidė") & morph_gloss_en == "like" & homonym_id == "0", "be.like"),
+         # morph_gloss_en = replace(morph_gloss_en, lex_entry == stri_trans_nfc("kidė") & morph_gloss_en == "like" & homonym_id == "0", "be like"),
          morph_gloss_id = replace(morph_gloss_id, lex_entry == "ma'" & morph_gloss_id == "mak", "ibu")) |> 
   mutate(across(where(is.character), ~str_trim(., side = "both"))) |> 
   mutate(# create column indicating if the lexicon & morpheme are the same with the word
-    word_equal_lexentry = if_else(word == lex_entry, TRUE, FALSE),
-    morph_equal_lexentry = if_else(morph == lex_entry, TRUE, FALSE))
+    word_equal_lexentry = if_else(stri_trans_nfc(str_to_lower(word)) == stri_trans_nfc(str_to_lower(lex_entry)), TRUE, FALSE),
+    morph_equal_lexentry = if_else(stri_trans_nfc(str_to_lower(morph)) == stri_trans_nfc(str_to_lower(lex_entry)), TRUE, FALSE),
+    lexentry_equal_phrase = if_else(stri_trans_nfc(str_to_lower(lex_entry)) == stri_trans_nfc(str_to_lower(eno_phrase)), TRUE, FALSE) # to exclude example sentences where the phrase is exactly the same with lexical entry
+    )
 flex_lexicon1 <- flex_lexicon |> 
   mutate(homonym_id = replace(homonym_id, homonym_id == "", "0")) |> 
-  mutate(across(where(is.character), ~str_trim(., side = "both")))
+  mutate(across(where(is.character), ~str_trim(., side = "both"))) |> 
+  filter(morph_gloss_en != "")
 
 # 1. Finding words equal with lexical entry vs. those that are not ====
 ## We need to identify which word form (in `word` column of `flex_from_text`) is the same with the `lex_entry` form; in the `flex_from_text` data frame, identify this by filtering via `word_equal_lexentry` column
 word_equal_lexentry <- flex_from_text1 |> 
   filter(word_equal_lexentry)
 word_different_from_lexentry <- flex_from_text1 |> 
-  filter(!word_equal_lexentry)
+  filter(!word_equal_lexentry, complex_word)
 
 # 2. Pre-caution/checking ====
 ## pre-cautionary check for convergence between `flex_lexicon` and `flex_from_text` for the `lex_entry` numbers
@@ -41,21 +44,24 @@ word_different_from_lexentry <- flex_from_text1 |>
 flex_lexicon1 |> 
   filter(stringi::stri_trans_nfc(lex_entry) %in% 
            stringi::stri_trans_nfc(flex_from_text1$lex_entry))
-### A tibble: 1,252 × 10
+### A tibble: 1,252 × 10 (OLD)
+### A tibble: 1,159 × 10 (28 Dec. 2024)
 
 ### identify the number of entries/rows for `lex_entry` in `flex_lexicon` that are NOT present in `flex_from_text`
 entry_added_directly_to_the_lexicon <- flex_lexicon1 |> 
   filter(!stringi::stri_trans_nfc(lex_entry) %in% 
            stringi::stri_trans_nfc(flex_from_text1$lex_entry))
-entry_added_directly_to_the_lexicon
-### A tibble: 310 × 10
 
-### so the total of 310 + 1,252 is 1,562 (this is the total rows in the `flex_lexicon`, which is a match)
+### A tibble: 310 × 10 (OLD)
+### A tibble: 244 × 10
+
+### (OLD) so the total of 310 + 1,252 is 1,562 (this is the total rows in the `flex_lexicon`, which is a match)
+### so the total of 244 + 1,159 is 1,403 (this is the total rows in the `flex_lexicon`, which is a match)
 nrow(flex_lexicon1)
 
 ### identify the number of unique `lex_entry` (in `flex_from_text`) that is also in the `flex_lexicon`
 flex_from_text1 |> 
-  filter(lex_entry %in% flex_lexicon1$lex_entry) |> 
+  filter(stringi::stri_trans_nfc(lex_entry) %in% stringi::stri_trans_nfc(flex_lexicon1$lex_entry)) |> 
   select(lex_entry, homonym_id) |> 
   distinct()
 ### A tibble: 1,176 × 2 (there are 1,176 unique combination of lexical entries and homonym ID in `flex_from_text`; the lexical entries types/forms are also present in `flex_lexicon`)
@@ -69,21 +75,23 @@ flex_lexicon1 |>
 ### A tibble: 1,195 × 2
 ### (there are 1,195 unique combination of lexical entries and homonym ID in `flex_lexicon` that matches with lexical entries forms in `flex_from_text`)
 
-#### there are NO UNMATCHED lexical entry between `flex_from_text` and `flex_lexicon` as shown below
+#### (OLD) there are NO UNMATCHED lexical entry between `flex_from_text` and `flex_lexicon` as shown below
+##### Dec, 30, 2024: The above statement is outdated because we now excluded clear Indonesian loan words.
+##### Dec, 30, 2024: This is why the output of the code below produces results of mostly Indonesian words in the `flex_from_text`
 flex_from_text1 |> 
-  filter(!lex_entry %in% flex_lexicon1$lex_entry)
-#### A tibble: 0 × 29
+  filter(!stringi::stri_trans_nfc(lex_entry) %in% stringi::stri_trans_nfc(flex_lexicon1$lex_entry))
+#### (OLD) A tibble: 0 × 29
 
 ### identify the number of unique `lex_entry` (in `flex_from_text`) that is also in the `flex_lexicon` (for `word_different_from_lexentry`)
 word_different_from_lexentry |> 
-  filter(lex_entry %in% flex_lexicon1$lex_entry) |> 
+  filter(stri_trans_nfc(lex_entry) %in% stri_trans_nfc(flex_lexicon1$lex_entry)) |> 
   select(lex_entry) |> 
   distinct()
 ### A tibble: 700 × 1 (there are 700 unique lexical entries in `flex_from_text` [for `word_different_from_lexentry`] also present in the lexical entries in `flex_lexicon`)
 ### identify the number of unique `lex_entry` (in `flex_from_text`) that is also in the `flex_lexicon` (for `word_different_from_lexentry`)
 #### NOW INCLUDING THE HOMONYM ID
 word_different_from_lexentry |> 
-  filter(lex_entry %in% flex_lexicon1$lex_entry) |> 
+  filter(stri_trans_nfc(lex_entry) %in% stri_trans_nfc(flex_lexicon1$lex_entry)) |> 
   select(lex_entry, homonym_id) |> 
   distinct()
 ### A tibble: 745 × 2
@@ -102,11 +110,16 @@ flex_lexicon1 |>
   select(lex_entry, homonym_id) |> 
   distinct()
 
-
-#### there are NO UNMATCHED lexical entry between `flex_from_text` [for `word_different_from_lexentry`] and `flex_lexicon` as shown below
+#### (OLD) there are NO UNMATCHED lexical entry between `flex_from_text` [for `word_different_from_lexentry`] and `flex_lexicon` as shown below
+##### Dec, 30, 2024: The above statement is outdated because we now excluded clear Indonesian loan words.
+##### Dec, 30, 2024: This is why the output of the code below produces results of mostly Indonesian words in the `flex_from_text`
 word_different_from_lexentry |> 
-  filter(!lex_entry %in% flex_lexicon1$lex_entry)
-#### A tibble: 0 × 29
+  filter(!stri_trans_nfc(lex_entry) %in% stri_trans_nfc(flex_lexicon1$lex_entry))
+word_different_from_lexentry |> 
+  filter(!stri_trans_nfc(lex_entry) %in% stri_trans_nfc(flex_lexicon1$lex_entry)) |> 
+  select(lex_entry, morph_gloss_en, morph_gloss_id) |> 
+  distinct()
+#### (OLD) A tibble: 0 × 29
 
 tes_lex <- c("pe", "abė", "bak", "kahinu", "a",
              "arkih", "anu̇k", "yũ'ũ",
@@ -126,9 +139,10 @@ lex <- flex_from_text1 |>
   # filter(!morph_type %in% c("prefix", "suffix")) |>
   select(word, eno_word_id, eno_word_gloss_id, eno_word_gloss_en, eno_word_pos, morph_type,
          homonym_id, lex_entry, morph, morph_gloss_en, morph_gloss_id, morph_gram,
-         word_equal_lexentry, phrase_id, 
+         word_equal_lexentry, complex_word, phrase_id, is_variant, 
          phrase_line,
-         eno_phrase, eno_phrase_gloss_id, eno_phrase_gloss_eng, text_title) |> 
+         eno_phrase, eno_phrase_gloss_id, eno_phrase_gloss_eng, text_title, lexentry_equal_phrase,
+         morph_equal_lexentry) |> 
   distinct()
 nrow(lex)
 
@@ -148,14 +162,14 @@ lex1 <- flex_lexicon1 |>
 lex2 <- lex1 |> 
   
   # add the root_word_id for complex word (that is not equal with the lex_entry)
-  mutate(root_word_id = if_else(!word_equal_lexentry & !morph_type %in% c("root", "suffix", "prefix"),  ## the morph type == "root" is only for "ho="
+  mutate(root_word_id = if_else(!word_equal_lexentry & complex_word & !morph_type %in% c("root", "suffix", "prefix"),  ## the morph type == "root" is only for "ho="
                                 entry_id,
                                 root_word_id)) |> 
   select(root_word_id, everything())
 
 lex3 <- lex2 |> 
   # the next line is to turn the word id into the general entry id, especially when the entry of the word has root id (hence complex word and not equal with the lexical entry from the Lexicon)
-  mutate(entry_id = if_else(root_word_id != "" & !word_equal_lexentry & !morph_type %in% c("root", "suffix", "prefix"),
+  mutate(entry_id = if_else(root_word_id != "" & !word_equal_lexentry & complex_word & !morph_type %in% c("root", "suffix", "prefix"),
                             eno_word_id,
                             entry_id)) |> 
   mutate(entry_id = if_else(!is.na(lexicon_id) & is.na(entry_id),
@@ -608,19 +622,22 @@ to_show_to_pak_cok_team <- lex10 |>
 ## OLD CODES above - end ====
 
 # 4. debugging for the no-root-word-id ==========
-no_root_word_id <- readxl::read_xlsx("no_root_word_id.xlsx")
+no_root_word_id <- readxl::read_xlsx("input/contemporary/web-and-app/no_root_word_id.xlsx")
 no_root_word_id_rgx <- paste("(", paste(unique(no_root_word_id$root_word_id), collapse = "|"), ")", sep = "")
 
 
 ## TRIAL CODE FOR DEBUGGING =====
-#### run the code above from line 2 until line 133
+#### run the code above from line 2 until before "OLD CODES below - begin" section (or until the end of section 3)
 
 #### Work out later how to capture lexical entry "buh" as prefix and as stem because the prefix and stem morphemes of "buh" are put under the same lexical entry "buh".
 
-
+##### Original 1 (March version 2024) =====
+##### IMPORTANT: try to use the new code file called "processing-all-contemporary-texts-ELAN-FLEX-flextext-NEW-into-pak-Cok-db-2024-12-31"
 lex1 <- lex |> 
+  mutate(lex_entry = stri_trans_nfc(lex_entry)) |> 
   left_join(flex_lexicon1 |> 
-              mutate(lexicon_id = entry_id)) |> 
+              mutate(lexicon_id = entry_id,
+                     lex_entry = stri_trans_nfc(lex_entry))) |> 
   mutate(root_word_id = "") |> 
   select(root_word_id, 
          entry_id, 
@@ -636,7 +653,34 @@ lex1 <- lex |>
   mutate(entry_id_new = str_c(lex_entry, "_", homonym_id, "_", entry_id, "_sn", sense_order, sep = "")) |>
   select(root_word_id, entry_id_new, entry_id, lexicon_id, eno_word_id, everything())
 
+##### New (December 2024) ==============
+# lex1 <- flex_lexicon1 |> 
+#   mutate(lexicon_id = entry_id,
+#          lex_entry = stri_trans_nfc(lex_entry)) |> 
+#   left_join(lex |> 
+#               mutate(lex_entry = stri_trans_nfc(lex_entry))) |> 
+#   mutate(root_word_id = "") |> 
+#   select(root_word_id, 
+#          entry_id, 
+#          lexicon_id, 
+#          eno_word_id, 
+#          word, eno_word_pos, eno_word_gloss_id, eno_word_gloss_en, 
+#          lex_entry, homonym_id, sense_order, sense_gram, etym, variant, 
+#          morph_gloss_en, morph_gloss_id, everything()) |> 
+#   group_by(lex_entry, homonym_id, sense_order) |> 
+#   arrange(lex_entry, homonym_id, sense_order) |> 
+#   ungroup() |> 
+#   # mutate(entry_id_new = str_c(lex_entry, "_", homonym_id, "_", entry_id, sep = "")) |>
+#   mutate(entry_id_new = str_c(lex_entry, "_", homonym_id, "_", entry_id, "_sn", sense_order, sep = "")) |>
+#   select(root_word_id, entry_id_new, entry_id, lexicon_id, eno_word_id, everything())
+
+nrow(lex1)
+
 lex1 |> filter(is.na(entry_id_new))
+
+lex1 |> filter(is.na(entry_id))
+
+lex1 |> filter(is.na(eno_word_id))
 
 lex1 <- lex1 |> filter(!is.na(entry_id_new))
 
@@ -644,12 +688,14 @@ lex1 |> filter(is.na(entry_id_new))
 
 lex1 |> filter(is.na(root_word_id))
 
+lex1 |> filter(is.na(eno_word_id))
+
 # lex1 |> filter(lex_entry == "bak") -> baksample
 
 lex2 <- lex1 |> # baksample |> 
   
   # add the root_word_id for complex word (that is not equal with the lex_entry)
-  mutate(root_word_id = if_else(!word_equal_lexentry & !morph_type %in% c("root", "suffix", "prefix"),  ## the morph type == "root" is only for "ho="
+  mutate(root_word_id = if_else(!word_equal_lexentry & complex_word & !morph_type %in% c("root", "suffix", "prefix"),  ## the morph type == "root" is only for "ho="
                                 entry_id_new,
                                 root_word_id)) |> 
   select(root_word_id, everything())
@@ -665,7 +711,7 @@ flex_lexicon2 <- flex_lexicon1 |>
 lex3 <- lex2 |> 
   mutate(id = "") |> 
   # the next line is to turn the word id into the general entry id, especially when the entry of the word has root id (hence complex word and not equal with the lexical entry from the Lexicon)
-  mutate(id = if_else(root_word_id != "" & !word_equal_lexentry & !morph_type %in% c("root", "suffix", "prefix"),
+  mutate(id = if_else(root_word_id != "" & !word_equal_lexentry & complex_word & !morph_type %in% c("root", "suffix", "prefix"),
                       eno_word_id,
                       id)) |> 
   distinct() |> 
@@ -724,8 +770,12 @@ lex5 <- lex4 |>
   mutate(word_type = replace(word_type,
                              root_word_id != "" &
                                !morph_type %in% c("prefix", "root", "suffix") &
-                               !word_equal_lexentry,
-                             "complex word")) |> 
+                               !word_equal_lexentry &
+                               complex_word,
+                             "complex word")) |>
+  mutate(word_type = replace(word_type,
+                             is_variant & morph_type == "stem",
+                             "variant")) |>
   mutate(word_type = replace(word_type,
                              morph_type == "root",
                              "clitic")) |> 
@@ -1116,7 +1166,7 @@ ex_eng_to_translate <- example_to_translate_into_indonesian |>
 #                                            split_sentences = FALSE,
 #                                            preserve_formatting = TRUE,
 #                                            auth_key = deeplkey))
-# ex_idn_to_translate |> writexl::write_xlsx("ex_idn_to_translate.xlsx")
+# ex_idn_to_translate |> writexl::write_xlsx("input/contemporary/web-and-app/ex_idn_to_translate.xlsx")
 
 ## now translate the English translation of the Example into Indonesian
 # ex_eng_to_translate <- ex_eng_to_translate |>
@@ -1126,10 +1176,10 @@ ex_eng_to_translate <- example_to_translate_into_indonesian |>
 #                                            split_sentences = FALSE,
 #                                            preserve_formatting = TRUE,
 #                                            auth_key = deeplkey))
-# ex_eng_to_translate |> writexl::write_xlsx("ex_eng_to_translate.xlsx")
+# ex_eng_to_translate |> writexl::write_xlsx("input/contemporary/web-and-app/ex_eng_to_translate.xlsx")
 
-ex_idn_to_translate <- readxl::read_xlsx("ex_idn_to_translate.xlsx")
-ex_eng_to_translate <- readxl::read_xlsx("ex_eng_to_translate.xlsx")
+ex_idn_to_translate <- readxl::read_xlsx("input/contemporary/web-and-app/ex_idn_to_translate.xlsx")
+ex_eng_to_translate <- readxl::read_xlsx("input/contemporary/web-and-app/ex_eng_to_translate.xlsx")
 
 example_to_translate_into_english <- example_to_translate_into_english |> 
   left_join(ex_idn_to_translate)
@@ -1173,23 +1223,50 @@ to_show_pak_cok_team <- wordsdb6 |>
 # to_show_pak_cok_team |> 
 #   count(word, english, indonesian, root_etymology, sort = TRUE) |> 
 #   filter(str_detect(root_etymology, "Indones", FALSE)) |> 
-#   writexl::write_xlsx("indonesian_loan.xlsx")
+#   writexl::write_xlsx("input/contemporary/web-and-app/indonesian_loan.xlsx")
 
 ## load back the entries with Indonesian loan to be used to filtered out the relevant Indonesian loan
-idn_loan_excl <- readxl::read_xlsx("indonesian_loan.xlsx") |> 
+idn_loan_excl <- readxl::read_xlsx("input/contemporary/web-and-app/indonesian_loan.xlsx") |> 
   filter(excluded == "y")
 
+
+cullex_ge1_complex1 <- cullex_ge1_complex |> 
+  filter(ID != 156)
+cullex_ge1_root
+cullex_ge0_root1 <- cullex_ge0_root |> 
+  mutate(across(matches("(word|lx)$"), ~str_replace(., "u̇'i", stri_trans_nfc ("ė'ėi"))))
 
 # Fix the Indonesian loan into just loanwords, but first, exclude the excluded loanwords
 to_show_pak_cok_team <- to_show_pak_cok_team |> 
   
-  # exclude loan word
-  filter(!word %in% idn_loan_excl$word) |> 
+  # join cultural items images
+  left_join(cullex_ge1_complex1 |> select(word, file_basename, pc)) |> 
   
-  mutate(root_etymology = replace(root_etymology,
-                                  str_detect(root_etymology, "Indonesian"),
-                                  "loanwords"))
+  # exclude loan word
+  filter(!word %in% idn_loan_excl$word) # |> 
 
+  # mutate(root_etymology = replace(root_etymology,
+  #                                 str_detect(root_etymology, "Indonesian"),
+  #                                 "loanwords"))
+myfilters <- to_show_pak_cok_team$word == cullex_ge1_root$word[1] & to_show_pak_cok_team$indonesian == cullex_ge1_root$gn_1[1]
+to_show_pak_cok_team$pc[myfilters] <- cullex_ge1_root$pc[1]
+to_show_pak_cok_team$file_basename[myfilters] <- cullex_ge1_root$file_basename[1]
+
+myfilters <- to_show_pak_cok_team$word == cullex_ge1_root$word[2] & to_show_pak_cok_team$indonesian == cullex_ge1_root$gn_1[2]
+to_show_pak_cok_team$pc[myfilters] <- cullex_ge1_root$pc[2]
+to_show_pak_cok_team$file_basename[myfilters] <- cullex_ge1_root$file_basename[2]
+
+to_show_pak_cok_team <- to_show_pak_cok_team |> 
+  left_join(cullex_ge0_complex |> select(word, file_basename1 = file_basename, pc1 = pc)) |> 
+  mutate(pc = if_else(!is.na(pc1), pc1, pc),
+         file_basename = if_else(!is.na(file_basename1), file_basename1, file_basename)) |> 
+  select(-file_basename1, -pc1) |> 
+  left_join(cullex_ge0_root1 |> select(word, english = ge_0, fb1 = file_basename, pc1 = pc)) |> 
+  mutate(pc = if_else(!is.na(pc1), pc1, pc),
+         file_basename = if_else(!is.na(fb1), fb1, file_basename)) |> 
+  select(-fb1, -pc1) |> 
+  mutate(file_basename = replace_na(file_basename, ""),
+         pc = replace_na(pc, ""))
 # get the total entries for the FLEx database for EnoLEX proceeding to be put in Table 1.
 # the total entries here are unique combination of the word column (which captures root form and complex form), root column, and homonym_id
 to_show_pak_cok_team |> 
@@ -1199,6 +1276,7 @@ to_show_pak_cok_team |>
 
 # BELOW IS THE CODE TO SAVE THE DATABASE TO GOOGLE SHEET TO SHARE TO PAK COK's TEAM
 # googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_new")
+googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_20241230")
 
 
 root_id <- unique(to_show_pak_cok_team$word_id)
