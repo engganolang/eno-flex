@@ -3,6 +3,7 @@
 
 library(tidyverse)
 library(xml2)
+library(stringi)
 
 # A. Natural texts ==============
 
@@ -11,11 +12,23 @@ library(xml2)
 #                 full.names = TRUE)
 
 ## read-in the .flextext export of the analyzed interlinear texts =====
-xml_file <- dir("contemporary-enggano-interlinear-text/", 
-                pattern = "all-contemp-texts-with-idn-gloss", 
+# xml_file <- dir("contemporary-enggano-interlinear-text/", 
+#                 pattern = "all-contemp-texts-with-idn-gloss", 
+#                 full.names = TRUE) |> 
+#   # get the March Meeting Version 2024
+#   str_subset("march2024")
+
+# xml_file <- dir("input/contemporary/interlinear/", 
+#                 pattern = "all-contemp-texts-with-idn-gloss", 
+#                 full.names = TRUE) |> 
+#   # get the March Meeting Version 2024
+#   str_subset("march2024")
+
+xml_file <- dir("input/contemporary/interlinear/", 
+                pattern = "all-contemp-texts-2024", 
                 full.names = TRUE) |> 
-  # get the March Meeting Version 2024
-  str_subset("march2024")
+  # get the late December Version 2024
+  str_subset("\\-12-30")
 
 
 ## retrieve the interlinear-text node =====
@@ -90,12 +103,15 @@ eno_text_gloss_df <- pmap(list(a = eno_text_id, b = eno_segnum,
 ## combine the tibbles list from all texts into one tibble
 eno_text_gloss_df_all <- list_rbind(eno_text_gloss_df)
 eno_text_gloss_df |> 
-  # write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new.rds")
-  write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-march2024.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-new.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-new-march2024.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-2024-12-28.rds")
+  write_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-2024-12-30.rds")
 eno_text_gloss_df_all |> 
-  # write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded.rds")
-  write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded-march2024.rds")
-
+  # write_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-new-binded.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-new-binded-march2024.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-binded-2024-12-28.rds")
+  write_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-binded-2024-12-30.rds")
 ## 2. Gathering the WORD and MORPH (and their glosses, POS, etc.) ======
 
 ### create an empty list of the same length as the number of the natural texts 
@@ -329,16 +345,29 @@ for (i in seq_along(title)) {
     mutate(text_title = title[i]) |> 
     left_join(eno_text_gloss_df[[i]])
   
-  df_all[[i]] <- df
-  
+  # df_all[[i]] <- df
+  fnames <- str_c("output/contemporary/interlinear/interim-texts/", stri_trans_nfc(title[i]), ".rds", sep = "")
+  write_rds(df, fnames)
+  message(paste("saving \"", title[i], "\"\n", sep = ""))
   # i <- i + 1
   
 } # end of if
 
+text_interim_files <- dir(path = "output/contemporary/interlinear/interim-texts/",
+                            full.names = TRUE)
+
+for (i in seq_along(title)) {
+  
+  df_all[[i]] <- read_rds(text_interim_files[i])
+  
+}
+
 ### save the tibbles for each text ======
 df_all |> 
-  # write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_as_tibble-new.rds")
-  write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_as_tibble-new-march2024.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_text_as_tibble-new.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_text_as_tibble-new-march2024.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_text_as_tibble-2024-12-28.rds")
+  write_rds("output/contemporary/interlinear/eno_contemp_text_as_tibble-2024-12-30.rds")
 
 
 
@@ -350,11 +379,19 @@ df_all |>
 library(tidyverse)
 library(xml2)
 
-xml_file <- dir("contemporary-enggano-interlinear-text/", 
+# xml_file <- dir("contemporary-enggano-interlinear-text/", 
+#                 pattern = "all-contemp-elicitation", 
+#                 full.names = TRUE) |> 
+#   # get the March Meeting Version 2024
+#   str_subset("march2024")
+
+xml_file <- dir("input/contemporary/interlinear/", 
                 pattern = "all-contemp-elicitation", 
                 full.names = TRUE) |> 
   # get the March Meeting Version 2024
-  str_subset("march2024")
+  # str_subset("march2024")
+  # get the late December 2024 version
+  str_subset("2024-12-30")
 
 interlinear_text <- xml_file |> 
   read_xml() |> 
@@ -408,6 +445,11 @@ eno_text_gloss_idn <- phrases |>
   map(unlist) |> 
   map(\(x) replace(x, nchar(x) == 0, NA))
 
+#### check if the length for the gloss languages are all equal ======
+length_text <- map2_lgl(eno_text_gloss_eng, eno_text_gloss_idn, \(x, y) length(x) == length(y))
+all(length_text) == TRUE
+which(length_text == FALSE)
+
 ### combine the text data from different elicited files into a list of tibbles
 eno_text_gloss_df <- pmap(list(a = eno_text_id, b = eno_text,
                                c = eno_text_gloss_idn,
@@ -424,15 +466,17 @@ eno_text_gloss_df_all <- list_rbind(eno_text_gloss_df)
 
 ### save the list tibbles
 eno_text_gloss_df |> 
-  # write_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new.rds")
-  write_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-march2024.rds")
-
+  # write_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-new.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-new-march2024.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-2024-12-28.rds")
+  write_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-2024-12-30.rds")
 
 ### save the binded tibbles (non-list format)
 eno_text_gloss_df_all |> 
-  # write_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-binded.rds")
-  write_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_only_as_tibble-new-binded-march2024.rds")
-
+  # write_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-new-binded.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-new-binded-march2024.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-binded-2024-12-28.rds")
+  write_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-binded-2024-12-30.rds")
 
 ## 2. Gathering the WORD and MORPH (and their glosses, POS, etc.) ======
 
@@ -659,15 +703,27 @@ for (i in seq_along(title)) {
     mutate(text_title = title[i]) |> 
     left_join(eno_text_gloss_df[[i]])
   
-  df_all[[i]] <- df
+  # df_all[[i]] <- df
+  fnames <- str_c("output/contemporary/interlinear/interim-elicitation/", title[i], ".rds", sep = "")
+  write_rds(df, fnames)
+  message(paste("saving \"", title[i], "\"\n", sep = ""))
+}
+
+elicit_interim_files <- dir(path = "output/contemporary/interlinear/interim-elicitation/",
+                            full.names = TRUE)
+
+for (i in seq_along(title)) {
+  
+  df_all[[i]] <- read_rds(elicit_interim_files[i])
   
 }
 
-
 df_all |> 
-  # write_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_as_tibble-new.rds")
-  write_rds("contemporary-enggano-interlinear-text/eno_contemp_elicitation_as_tibble-new-march2024.rds")
-
+  # write_rds("output/contemporary/interlinear/eno_contemp_elicitation_as_tibble-new.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_elicitation_as_tibble-new-march2024.rds")
+  # write_rds("output/contemporary/interlinear/eno_contemp_elicitation_as_tibble-2024-12-28.rds")
+  write_rds("output/contemporary/interlinear/eno_contemp_elicitation_as_tibble-2024-12-30.rds")
+  
 
 # C. Textbooks ===============
 
@@ -681,14 +737,12 @@ library(xml2)
 #                 pattern = "textbook\\-interlinear\\.flextext", 
 #                 full.names = TRUE)
 # xml_file <- dir("contemporary-enggano-interlinear-text/", 
-#                 pattern = "textbook\\-interlinear\\-2024.+.flextext", 
-#                 full.names = TRUE)
-# xml_file <- dir("contemporary-enggano-interlinear-text/", 
 #                 pattern = "textbook\\-interlinear\\-20241129.flextext", 
 #                 full.names = TRUE)
-xml_file <- dir("textbook/", 
+xml_file <- dir("input/textbook/interlinear", 
                 pattern = "textbook\\-interlinear\\-20241201.flextext", 
                 full.names = TRUE)
+
 xml_file
 
 ## retrieve the interlinear-text node =====
@@ -785,9 +839,8 @@ eno_text_gloss_df |>
   # map(~mutate(., text_title = str_replace_all(text_title, "\\sUnit\\s", "_"))) |> 
   # map(~mutate(., text_title = str_replace_all(text_title, "^Traditional.+(?=_0)", "Culture"))) |> 
 
-  # write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new.rds")
-  # write_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_20241129.rds")
-  write_rds("textbook/textbook_as_tibble_20241201.rds")
+  # write_rds("output/textbook/interlinear/textbook_as_tibble_20241129.rds")
+  write_rds("output/textbook/interlinear/textbook_as_tibble_20241201.rds")
 eno_text_gloss_df_all |> 
   
   # remove section symbol
@@ -799,9 +852,8 @@ eno_text_gloss_df_all |>
   # map(~mutate(., text_title = str_replace_all(text_title, "\\sUnit\\s", "_"))) |> 
   # map(~mutate(., text_title = str_replace_all(text_title, "^Traditional.+(?=_0)", "Culture"))) |> 
   
-  # write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_only_as_tibble-new-binded.rds")
-  # write_rds("contemporary-enggano-interlinear-text/textbook_as_tibble_20241129-binded.rds")
-  write_rds("textbook/textbook_as_tibble_20241201-binded.rds")
+  # write_rds("output/textbook/interlinear/textbook_as_tibble_20241129-binded.rds")
+  write_rds("output/textbook/interlinear/textbook_as_tibble_20241201-binded.rds")
 
 
 ## 2. Gathering the WORD and MORPH (and their glosses, POS, etc.) ======
@@ -1047,10 +1099,9 @@ for (i in seq_along(title)) {
 df_all |> 
   # filter out the NAs in the word
   map(~filter(., !is.na(word))) |> 
-  # write_rds("contemporary-enggano-interlinear-text/eno_contemp_text_as_tibble-new.rds")
-  # write_rds("contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_nov-2024.rds")
-  # write_rds("contemporary-enggano-interlinear-text/textbook_lexicon_as_tibble_20241129.rds")
-  write_rds("textbook/textbook_lexicon_as_tibble_20241201.rds")
+  # write_rds("output/textbook/interlinear/textbook_lexicon_as_tibble_nov-2024.rds")
+  # write_rds("output/textbook/interlinear/textbook_lexicon_as_tibble_20241129.rds")
+  write_rds("output/textbook/interlinear/textbook_lexicon_as_tibble_20241201.rds")
 df_all1 <- df_all |> 
   # filter out the NAs in the word
   map(~filter(., !is.na(word)))
