@@ -154,7 +154,7 @@ eno_morph_split1 <- eno_morph_split1 |>
                                        "siapa-siapa yang akan merusak ini, siapa yang akan mencarikan mereka lauk, siapa cari"),
          eno_phrase_gloss_id = replace(eno_phrase_gloss_id,
                                        eno_phrase_gloss_id == "tadinya itu pulau satu itu menjadi hak milik mereka ka'hua kakore",
-                                       "tadinya itu, pulau satu itu, menjadi hak milik mereka Ka'hua Kakore"),
+                                       "tadinya itu, Pulau Satu itu, menjadi hak milik mereka Ka'hua Kakore"),
          eno_phrase_gloss_id = str_replace_all(eno_phrase_gloss_id,
                                                "\\bkal[uo]\\b",
                                                "kalau"),
@@ -421,12 +421,12 @@ eno_morph_split1 <- eno_morph_split1 |>
                                        eno_word_gloss_en == "is",
                                      "no more"),
          
-         eno_word_gloss_id = replace(eno_word_gloss_id,
-                                     lex_entry == "puru" & eno_word_gloss_id == "rumput",
-                                     "bulu"),
-         eno_word_gloss_en = replace(eno_word_gloss_en,
-                                     lex_entry == "puru" & eno_word_gloss_en == "hair",
-                                     "fur"),
+         # eno_word_gloss_id = replace(eno_word_gloss_id,
+         #                             lex_entry == "puru" & eno_word_gloss_id == "rumput",
+         #                             "bulu"),
+         # eno_word_gloss_en = replace(eno_word_gloss_en,
+         #                             lex_entry == "puru" & eno_word_gloss_en == "hair",
+         #                             "fur"),
          
          morph_gloss_id = replace(morph_gloss_id,
                                   morph_gloss_en == "dig" & 
@@ -453,7 +453,7 @@ eno_morph_split1 <- eno_morph_split1 |>
                                   morph_gloss_en == "like" &
                                     eno_word_gloss_id == "seperti" &
                                     morph_gloss_id == "sama",
-                                  "be.like"),
+                                  "be like"),
          
          eno_word_gloss_id = replace(eno_word_gloss_id,
                                      word == "akeam" & 
@@ -484,10 +484,10 @@ eno_morph_split1 <- eno_morph_split1 |>
                                        eno_word_gloss_en == "PERF",
                                      "no more"),
          
-         eno_word_gloss_id = replace(eno_word_gloss_id,
-                                     word == "hopuak" &
-                                       eno_word_gloss_id == "pergi",
-                                     "pulang"),
+         # eno_word_gloss_id = replace(eno_word_gloss_id,
+         #                             word == "hopuak" &
+         #                               eno_word_gloss_id == "pergi",
+         #                             "pulang"),
          
          eno_word_gloss_id = replace(eno_word_gloss_id,
                                      eno_word_gloss_id == "musyuwarah",
@@ -516,9 +516,9 @@ eno_morph_split1 <- eno_morph_split1 |>
                                        eno_word_gloss_en == "not",
                                      "not exist"),
          
-         eno_word_gloss_en = replace(eno_word_gloss_en,
-                                     eno_word_gloss_id == "seperti",
-                                     "be.like"),
+         # eno_word_gloss_en = replace(eno_word_gloss_en,
+         #                             eno_word_gloss_id == "seperti",
+         #                             "be like"),
          
          eno_phrase_gloss_id = str_replace_all(eno_phrase_gloss_id,
                                                "(?<=\\bke\\s)kahyapu\\b",
@@ -662,10 +662,10 @@ lu_form_df <- lu_form_df |>
                                    sense_gloss_idn == "alat untuk mengukur kelapa",
                                    "alat untuk menguliti/mencukur kelapa")) |> 
   mutate(form = replace(form, form == "manuhe", "Manuhe")) |> 
-  mutate(sense_gloss_en = replace(sense_gloss_en,
-                                  form == "keab" &
-                                    sense_gloss_en == "NEG",
-                                  "not exist")) |> 
+  # mutate(sense_gloss_en = replace(sense_gloss_en,
+  #                                 form == "keab" &
+  #                                   sense_gloss_en == "NEG",
+  #                                 "not exist")) |> 
   mutate(form = replace(form, form == "desember", "Desember")) |> 
   mutate(sense_gloss_idn = replace(sense_gloss_idn,
                                    sense_gloss_idn == "desember",
@@ -674,6 +674,7 @@ lu_form_df <- lu_form_df |>
                                   form == "dak" &
                                     sense_gloss_en == "NEG",
                                   "no; not")) |> 
+  mutate(sense_gloss_en = str_replace(sense_gloss_en, "^Aplicative", "Applicative")) |> 
   mutate(sense_gloss_idn = replace(sense_gloss_idn,
                                    form == "dak" &
                                      sense_gloss_idn == "NEG",
@@ -681,32 +682,32 @@ lu_form_df <- lu_form_df |>
   mutate(sense_gloss_idn = replace(sense_gloss_idn,
                                    sense_gloss_idn == "menggangu",
                                    "mengganggu")) |> 
-  mutate(sense_gloss_en = replace(sense_gloss_en,
-                                  sense_gloss_en == "like" &
-                                    sense_gloss_idn == "sama",
-                                   "be.like")) |> 
+  # mutate(sense_gloss_en = replace(sense_gloss_en,
+  #                                 sense_gloss_en == "like" &
+  #                                   sense_gloss_idn == "sama",
+  #                                  "be like")) |> 
   mutate(sense_gloss_idn = replace(sense_gloss_idn,
                                    sense_gloss_idn == "mengali" &
                                      form == "enan" &
                                      trait == "stem" &
                                      sense_gloss_en == "dig",
                                    "menggali")) |> 
-  mutate(sense_gloss_idn = replace(sense_gloss_idn,
-                                   is.na(sense_gloss_idn) &
-                                     sense_gloss_en == "sea cucumber",
-                                   "teripang; timun laut")) |> 
-  mutate(sense_gloss_idn = replace(sense_gloss_idn,
-                                   is.na(sense_gloss_idn) &
-                                     sense_gloss_en == "snail/sea shell",
-                                   "siput/cangkang laut")) |> 
-  mutate(sense_gloss_idn = replace(sense_gloss_idn,
-                                   is.na(sense_gloss_idn) &
-                                     sense_gloss_en == "oldest",
-                                   "tertua")) |> 
-  mutate(sense_gloss_idn = replace(sense_gloss_idn,
-                                   is.na(sense_gloss_idn) &
-                                     sense_gloss_en == "both",
-                                   "keduanya")) |> 
+  # mutate(sense_gloss_idn = replace(sense_gloss_idn,
+  #                                  is.na(sense_gloss_idn) &
+  #                                    sense_gloss_en == "sea cucumber",
+  #                                  "teripang; timun laut")) |> 
+  # mutate(sense_gloss_idn = replace(sense_gloss_idn,
+  #                                  is.na(sense_gloss_idn) &
+  #                                    sense_gloss_en == "snail/sea shell",
+  #                                  "siput/cangkang laut")) |> 
+  # mutate(sense_gloss_idn = replace(sense_gloss_idn,
+  #                                  is.na(sense_gloss_idn) &
+  #                                    sense_gloss_en == "oldest",
+  #                                  "tertua")) |> 
+  # mutate(sense_gloss_idn = replace(sense_gloss_idn,
+  #                                  is.na(sense_gloss_idn) &
+  #                                    sense_gloss_en == "both",
+  #                                  "keduanya")) |> 
   mutate(across(matches("gloss_idn?$"), 
                 ~str_replace_all(., "\\bduapuluh\\b", "dua puluh"))) |> 
   mutate(across(matches("gloss_idn"), 

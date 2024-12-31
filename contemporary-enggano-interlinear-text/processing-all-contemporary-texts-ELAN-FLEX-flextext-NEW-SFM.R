@@ -12,7 +12,8 @@ library(stringi)
 
 # lu_form_df <- read_rds("output/contemporary/lift/FLEX-lift-pre-fieldwork.rds")
 # lu_form_df <- read_rds("output/contemporary/lift/FLEX-lift-march-2024.rds")
-lu_form_df <- read_rds("output/contemporary/lift/FLEX-lift-2024-12-28.rds") |> 
+# lu_form_df <- read_rds("output/contemporary/lift/FLEX-lift-2024-12-28.rds") |> 
+lu_form_df <- read_rds("output/contemporary/lift/FLEX-lift-2024-12-30.rds") |> 
   mutate(sense_gloss_idn = replace(sense_gloss_idn, sense_gloss_idn == "pelapah nibung", "pelepah nibung")) |> 
   mutate(sense_gloss_en = replace(sense_gloss_en, sense_gloss_en == "land turtle" & form == "anu'un", "turtoise; land turtle")) |> 
   mutate(sense_gloss_en = replace(sense_gloss_en, sense_gloss_en == "a sea creature" & form == stri_trans_nfc("kahẽ"), "bristle worm")) |> 
@@ -20,10 +21,12 @@ lu_form_df <- read_rds("output/contemporary/lift/FLEX-lift-2024-12-28.rds") |>
 source("contemporary-enggano-interlinear-text/processing-all-contemporary-texts-ELAN-FLEX-flextext-NEW-splitting-morpheme.R")
 # eno_elicitation_texts <- read_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-new-binded.rds")
 # eno_elicitation_texts <- read_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-new-binded-march2024.rds")
-eno_elicitation_texts <- read_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-binded-2024-12-28.rds")
+# eno_elicitation_texts <- read_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-binded-2024-12-28.rds")
+eno_elicitation_texts <- read_rds("output/contemporary/interlinear/eno_contemp_elicitation_only_as_tibble-binded-2024-12-30.rds")
 # eno_natural_texts <- read_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-new-binded.rds")
 # eno_natural_texts <- read_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-new-binded-march2024.rds")
-eno_natural_texts <- read_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-binded-2024-12-28.rds")
+# eno_natural_texts <- read_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-binded-2024-12-28.rds")
+eno_natural_texts <- read_rds("output/contemporary/interlinear/eno_contemp_text_only_as_tibble-binded-2024-12-30.rds")
 eno_textbook_texts <- read_rds("output/textbook/interlinear/textbook_as_tibble_20241201-binded.rds")
 
 # read flora and fauna data =====
@@ -267,6 +270,7 @@ cullex_ge0_root <- read_rds("../Enggano-Fieldwork/2nd-fieldwork-2024-02-01/cultl
 cullex_ge0_complex <- read_rds("../Enggano-Fieldwork/2nd-fieldwork-2024-02-01/cultlex_with_pict_ge0.rds") |> 
   filter(morph_type != "root") |> 
   mutate(word = replace(word, word %in% "aroro' yakare", "aroro'")) |> 
+  mutate(word = replace(word, word %in% "yãkã' karpe", stri_trans_nfc("eyãkã' karpe"))) |> 
   mutate(across(matches("^(word|lx)$"), ~stri_trans_nfc(.)))
 cullex_ge1_root <- read_rds("../Enggano-Fieldwork/2nd-fieldwork-2024-02-01/cultlex_with_pict_ge1.rds") |> 
   filter(morph_type == "root") |> 
@@ -489,7 +493,7 @@ eno_example_references <- eno_elicitation_texts |>
 
 # 0. Initial filtering ===========
 ## `flex_from_text` holds filtered data of the .flextext export
-flex_from_text <- eno_morph_split1 |>
+flex_from_textsss <- eno_morph_split1 |>
   
   ## filtering all non-NAs lex_entry,
   filter(!is.na(lex_entry)) |> 
@@ -509,29 +513,31 @@ flex_from_text <- eno_morph_split1 |>
   # filter(str_detect(eno_phrase_gloss_eng, "\\b(?i)x{2,}", negate = TRUE)) |>
   
   ## replace NAs with empty string
-  mutate(across(where(is.character), ~replace(., is.na(.), ""))) |> 
+  mutate(across(where(is.character), ~replace(., is.na(.), ""))) 
+
+flex_from_text <- flex_from_textsss |> 
   
   mutate(# create column indicating if the lexicon & morpheme are the same with the word
-         word_equal_lexentry = if_else(word == lex_entry, TRUE, FALSE),
-         morph_equal_lexentry = if_else(morph == lex_entry, TRUE, FALSE))
+         word_equal_lexentry = if_else(stri_trans_nfc(str_to_lower(word)) == stri_trans_nfc(str_to_lower(lex_entry)), TRUE, FALSE),
+         morph_equal_lexentry = if_else(stri_trans_nfc(str_to_lower(morph)) == stri_trans_nfc(str_to_lower(lex_entry)), TRUE, FALSE))
 
 # check which lex entry in FLEx Lexicon not from the Text
 lu_form_df |> 
   select(!matches("^x_")) |> 
-  filter(!form %in% eno_morph_split1$lex_entry) |> 
+  filter(!stri_trans_nfc(form) %in% stri_trans_nfc(eno_morph_split1$lex_entry)) |> 
   distinct()
 
 # check which lex entry in FLEx Lexicon that is also from the Text
 lu_form_df |> 
   select(!matches("^x_")) |> 
-  filter(form %in% eno_morph_split1$lex_entry) |> 
+  filter(stri_trans_nfc(form) %in% stri_trans_nfc(eno_morph_split1$lex_entry)) |> 
   distinct()
 
 # check which lex entry from the Text not available in the FLEx Lexicon
 eno_morph_split1 |> 
   filter(!is.na(word),
          !lex_entry %in% lu_form_df$form) |> 
-  select(word, lex_entry) |> 
+  select(word, lex_entry, eno_word_pos) |> 
   distinct()
 
 # check which record has NA lex_entry, 
