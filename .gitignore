@@ -34,4 +34,9 @@ flex-sfm-import-experiment/*.PNG
 flex-sfm-import-experiment/format*.db
 flex-sfm-import-experiment/subentries-import-*
 flex-sfm-import-experiment/import-setting*
+flex-sfm-import-experiment/
 basic-vocab-list/
+lexicon.db
+lexicon-sfm-lexeme-based.db
+Textbook-dictionary-20241201-no-example*.db
+Project*.css

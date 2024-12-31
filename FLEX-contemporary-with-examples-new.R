@@ -1,10 +1,12 @@
-# Code to process the .lift export of FLEx lexicon into tibble
-# Gede Rajeg (University of Oxford & Universitas Udayana; 2023)
+# Code to process the .lift export of FLEx Lexicon into tibble/data frame
+# Gede Primahadi W. Rajeg (University of Oxford & Universitas Udayana; 2023-2024)
 
 library(tidyverse)
 library(xml2)
 
-flexdb <- read_xml("FLEX.lift") # March Project Meeting (March, 19th, 2024)
+# flexdb <- read_xml("input/contemporary/lift/FLEX.lift") # March Project Meeting (March, 19th, 2024)
+# flexdb <- read_xml("input/contemporary/lift/lift-2024-12-28.lift") # contemporary processing (28 December 2024)
+flexdb <- read_xml("input/contemporary/lift/lift-2024-12-30.lift") # contemporary processing (30 December 2024)
 
 # MAIN ENTRY ======
 
@@ -345,9 +347,10 @@ lu_form_df <- lu_form_df |>
 # notes_text_df
 
 
-# write_rds(lu_form_df, "FLEX-lift-pre-fieldwork.rds")
-write_rds(lu_form_df, "FLEX-lift-march-2024.rds")
-
+# write_rds(lu_form_df, "output/contemporary/lift/FLEX-lift-pre-fieldwork.rds")
+# write_rds(lu_form_df, "output/contemporary/lift/FLEX-lift-march-2024.rds")
+# write_rds(lu_form_df, "output/contemporary/lift/FLEX-lift-2024-12-28.rds")
+write_rds(lu_form_df, "output/contemporary/lift/FLEX-lift-2024-12-30.rds")
 
 
 
