@@ -626,7 +626,7 @@ ex_eng_to_translate <- example_to_translate_into_indonesian |>
   distinct()
 # get the DeepL API key from Kahler repo code file 0-source...
 ## now translate the Indonesian translation of the Example into English
-# ex_idn_to_translate <- ex_idn_to_translate |> 
+# ex_idn_to_translate <- ex_idn_to_translate |>
 #   mutate(ex_eng_deepl = deeplr::translate2(text = ex_idn,
 #                                            target_lang = "EN",
 #                                            source_lang = "ID",
@@ -634,6 +634,7 @@ ex_eng_to_translate <- example_to_translate_into_indonesian |>
 #                                            preserve_formatting = TRUE,
 #                                            auth_key = deeplkey))
 # ex_idn_to_translate |> writexl::write_xlsx("input/contemporary/web-and-app/ex_idn_to_translate.xlsx")
+# ex_idn_to_translate |> writexl::write_xlsx("input/contemporary/web-and-app/ex_idn_to_translate-2025.xlsx")
 
 ## now translate the English translation of the Example into Indonesian
 # ex_eng_to_translate <- ex_eng_to_translate |>
@@ -644,9 +645,12 @@ ex_eng_to_translate <- example_to_translate_into_indonesian |>
 #                                            preserve_formatting = TRUE,
 #                                            auth_key = deeplkey))
 # ex_eng_to_translate |> writexl::write_xlsx("input/contemporary/web-and-app/ex_eng_to_translate.xlsx")
+# ex_eng_to_translate |> writexl::write_xlsx("input/contemporary/web-and-app/ex_eng_to_translate-2025.xlsx")
 
-ex_idn_to_translate <- readxl::read_xlsx("input/contemporary/web-and-app/ex_idn_to_translate.xlsx")
-ex_eng_to_translate <- readxl::read_xlsx("input/contemporary/web-and-app/ex_eng_to_translate.xlsx")
+# ex_idn_to_translate <- readxl::read_xlsx("input/contemporary/web-and-app/ex_idn_to_translate.xlsx")
+ex_idn_to_translate <- readxl::read_xlsx("input/contemporary/web-and-app/ex_idn_to_translate-2025.xlsx")
+# ex_eng_to_translate <- readxl::read_xlsx("input/contemporary/web-and-app/ex_eng_to_translate.xlsx")
+ex_eng_to_translate <- readxl::read_xlsx("input/contemporary/web-and-app/ex_eng_to_translate-2025.xlsx")
 
 example_to_translate_into_english <- example_to_translate_into_english |> 
   left_join(ex_idn_to_translate)
@@ -743,7 +747,8 @@ to_show_pak_cok_team |>
 
 # BELOW IS THE CODE TO SAVE THE DATABASE TO GOOGLE SHEET TO SHARE TO PAK COK's TEAM
 # googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_new")
-googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_20241230")
+# googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_20241230")
+googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_20250105")
 
 
 root_id <- unique(to_show_pak_cok_team$word_id)
