@@ -54,9 +54,18 @@ These processing are needed to automate the linking between the root and
 the complex forms (as sub-entries of the roots), including adding the
 example sentences and source references of these examples.
 
+Here is how to cite the open-access PDF of the [print
+dictionary](https://www.zaraabadipublisher.com/2024/12/kamus-bahasa-enggano_64.html)
+based on the R codes and dataset processed in this GitHub repository:
+
+> Rajeg, Gede Primahadi Wijaya; Hemmings, Charlotte; Sangian, Engga
+> Zakaria; Wijaya, Dendi; Arka, I Wayan (2025). *Kamus Bahasa Enggano*.
+> University of Oxford & Zara Abadi. Book.
+> <https://doi.org/10.25446/oxford.28022312.v1>
+
 *NOTE*: The original, contemporary Enggano FLEx database needs to be
 cited independently from this repository:
 
-> Hemmings, Charlotte, Engga Zakaria Sangian, Erik Zobel. 2024.
-> Contemporary Enggano FLEx database. Unpublished corpus.
-> <https://enggano.ling-phil.ox.ac.uk/>
+> Hemmings, Charlotte, Engga Zakaria Sangian, Erik Zobel, Gede Primahadi
+> Wijaya Rajeg. 2024. Contemporary Enggano FLEx database. Unpublished
+> corpus. <https://enggano.ling-phil.ox.ac.uk/>
