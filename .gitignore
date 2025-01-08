@@ -5,7 +5,6 @@
 *.fwbackup
 *.pdf
 WritingSystems/
-*contemporary.lift
 *contemporary.lift-ranges
 *contemporary.xml
 *import-settings.map
@@ -14,7 +13,6 @@ FLEX-lexicon-with-sub-entries*.PNG
 *.docx
 *.xls
 *.xlsx
-*.lift
 *.lift-ranges
 basic-vocab-list/**.tsv
 basic-vocab-list/valpal**
