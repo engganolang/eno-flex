@@ -24,8 +24,7 @@ project](https://enggano.ling-phil.ox.ac.uk/)*.
 <a property="dct:title" rel="cc:attributionURL" href="https://github.com/engganolang/eno-flex">R
 codes and dataset for processing the Contemporary Enggano FLEx database
 into the digital and printed Contemporary Enggano dictionary</a> by
-<a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://orcid.org/0000-0002-2047-8621">Gede
-Primahadi Wijaya Rajeg</a> is licensed under
+Rajeg et al. is licensed under
 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Creative
 Commons Attribution-NonCommercial-ShareAlike 4.0
 International<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" alt=""></a>
@@ -38,10 +37,13 @@ International<img style="height:22px!important;margin-left:3px;vertical-align:te
 
 How to cite this repository (in APA 7<sup>th</sup>):
 
-> [Rajeg](https://orcid.org/0000-0002-2047-8621), G. P. W. (2024). *R
-> codes and dataset for processing the Contemporary Enggano FLEx
-> database into the digital and printed Contemporary Enggano dictionary*
-> (Version 0.0.1) \[Computer software\]. University of Oxford.
+> Rajeg, G. P. W., Hemmings, C., Sangian, E. Z., Wijaya, D., Pramartha,
+> C., & Arka, I. W. (2024). *R codes and dataset for processing the
+> Contemporary Enggano FLEx database into the
+> [digital](https://doi.org/10.25446/oxford.28188665) and
+> [printed](https://doi.org/10.25446/oxford.28022312.v1) Contemporary
+> Enggano dictionary* (Version 0.0.1) \[Computer software\]. University
+> of Oxford. <https://github.com/engganolang/eno-flex>
 > <https://doi.org/10.17605/OSF.IO/4BHMU>
 
 This repository records the R codes I use to process the LIFT output of
@@ -54,14 +56,35 @@ These processing are needed to automate the linking between the root and
 the complex forms (as sub-entries of the roots), including adding the
 example sentences and source references of these examples.
 
-Here is how to cite the open-access PDF of the [print
+Here is **how to cite** the open-access PDF of the [print
 dictionary](https://www.zaraabadipublisher.com/2024/12/kamus-bahasa-enggano_64.html)
-based on the R codes and dataset processed in this GitHub repository:
+(in APA 7<sup>th</sup>) based on the R codes and dataset processed in
+this GitHub repository:
 
-> Rajeg, Gede Primahadi Wijaya; Hemmings, Charlotte; Sangian, Engga
-> Zakaria; Wijaya, Dendi; Arka, I Wayan (2025). *Kamus Bahasa Enggano*.
-> University of Oxford & Zara Abadi. Book.
-> <https://doi.org/10.25446/oxford.28022312.v1>
+> Rajeg, G. P. W., Hemmings, C., Sangian, E. Z., Wijaya, D., & Arka, I
+> W. (*with* Milson Kaitora, Harun Kaharubi, M. Raflizen Kaitora (alm.),
+> Aron Kaitora (alm.), Johansen Kaharubi, Ishar Timius Kaitora,
+> Marlansius Kaharubi, Adam Kurniawan Kauno, & Resiawati Kaitora).
+> (2025). *Kamus Bahasa Enggano* (1st ed.). Zara Abadi; University of
+> Oxford’s Sustainable Digital Scholarship.
+> <https://doi.org/10.25446/oxford.28022312>
+
+The digital, web-based and mobile-responsive Contemporary Enggano
+dictionary is available at <https://enggano.cirhss.org/> and **below is
+how to cite** this digital Enggano dictionary (in APA 7<sup>th</sup>):
+
+> Rajeg, G. P. W., Hemmings, C., Pramartha, C. R. A., Sangian, E. Z.,
+> Wijaya, D., Ogilvie, S., Krauße, D., Arka, I. W., Dalrymple, M.,
+> Nothofer, B., Artanta Wibawa, P. W., Kusuma, P. A. D., Mahardika Adi
+> Putra, I. P. G., & Gotra, A. A. N. M. A. (*with* Milson Kaitora, Harun
+> Kaharubi, M. Raflizen Kaitora (alm.), Aron Kaitora (alm.), Johansen
+> Kaharubi, Ishar Timius Kaitora, Marlansius Kaharubi, Adam Kurniawan
+> Kauno, & Resiawati Kaitora). (2025). *Kamus Digital Bahasa Enggano*.
+> University of Oxford & Centre for Interdisciplinary Research on the
+> Humanities and Social Sciences (CIRHSS), Udayana University;
+> University of Oxford’s Sustainable Digital Scholarship.
+> <https://doi.org/10.25446/oxford.28188665>
+> <https://enggano.cirhss.org/>
 
 *NOTE*: The original, contemporary Enggano FLEx database needs to be
 cited independently from this repository:
