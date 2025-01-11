@@ -15,8 +15,34 @@ type: software
 authors:
   - given-names: Gede Primahadi Wijaya
     family-names: Rajeg
-    affiliation: University of Oxford & Universitas Udayana
+    affiliation: University of Oxford; Udayana University
     orcid: 'https://orcid.org/0000-0002-2047-8621'
+    email: primahadi_wijaya@unud.ac.id
+  - given-names: Charlotte
+    family-names: Hemmings
+    affiliation: University of Oxford
+    orcid: 'https://orcid.org/0000-0002-3076-5544'
+    email: charlotte.hemmings@ling-phil.ox.ac.uk
+  - given-names: Engga Zakaria
+    family-names: Sangian
+    affiliation: Universitas Dehasen Bengkulu
+    orcid: 'https://orcid.org/0009-0000-8802-6819'
+    email: ezs21072@gmail.com
+  - given-names: Dendi
+    family-names: Wijaya
+    affiliation: National Research and Innovation Agency
+    orcid: 'https://orcid.org/0000-0002-8767-9364'
+    email: dendi0587@gmail.com
+  - given-names: Cokorda
+    family-names: Pramartha
+    affiliation: Udayana University
+    email: cokorda@unud.ac.id
+    orcid: 'https://orcid.org/0000-0002-2835-3989'
+  - given-names: I Wayan
+    family-names: Arka
+    affiliation: Australian National University
+    orcid: 'https://orcid.org/0000-0002-2819-6186'
+    email: wayan.arka@anu.edu.au
 identifiers:
   - type: doi
     value: 10.17605/OSF.IO/4BHMU
