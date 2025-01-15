@@ -14,11 +14,11 @@ alt="The University of Oxford" />](https://www.ox.ac.uk/)
 alt="Faculty of Linguistics, Philology and Phonetics, the University of Oxford" />](https://www.ling-phil.ox.ac.uk/)
 [<img src="file-ahrc.png" width="325"
 alt="Arts and Humanities Research Council (AHRC)" />](https://www.ukri.org/councils/ahrc/)
-</br>*This work is part of the [AHRC-funded
-project](https://app.dimensions.ai/details/grant/grant.12915105) on the
-lexical resources for Enggano, led by the Faculty of Linguistics,
-Philology and Phonetics at the University of Oxford, UK. Visit the
-[central webpage of the Enggano
+</br>*This work is part of the AHRC-funded grants ([grant ID
+AH/W007290/1](https://gtr.ukri.org/projects?ref=AH%2FW007290%2F1) and
+[grant ID
+AH/S011064/1](https://gtr.ukri.org/projects?ref=AH%2FS011064%2F1)).
+Visit the [central webpage of the Enggano
 project](https://enggano.ling-phil.ox.ac.uk/)*.
 <p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/">
 <a property="dct:title" rel="cc:attributionURL" href="https://github.com/engganolang/eno-flex">R
