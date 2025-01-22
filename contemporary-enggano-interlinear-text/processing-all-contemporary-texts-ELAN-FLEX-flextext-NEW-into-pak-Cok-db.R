@@ -139,7 +139,7 @@ lex <- flex_from_text1 |>
   # filter(!morph_type %in% c("prefix", "suffix")) |>
   select(word, eno_word_id, eno_word_gloss_id, eno_word_gloss_en, eno_word_pos, morph_type,
          homonym_id, lex_entry, morph, morph_gloss_en, morph_gloss_id, morph_gram,
-         word_equal_lexentry, complex_word, phrase_id, is_variant, 
+         word_equal_lexentry, imperative, complex_word, phrase_id, is_variant,
          phrase_line,
          eno_phrase, eno_phrase_gloss_id, eno_phrase_gloss_eng, text_title, lexentry_equal_phrase,
          morph_equal_lexentry) |> 

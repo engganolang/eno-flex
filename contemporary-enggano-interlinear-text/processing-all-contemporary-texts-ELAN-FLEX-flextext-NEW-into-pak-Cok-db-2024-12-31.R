@@ -287,7 +287,7 @@ prefixes <- flex_lexicon2 |>
          eno_word_gloss_en = morph_gloss_en,
          eno_word_gloss_id = morph_gloss_id,
          sources = "lexicon3",
-         word_type = if_else(lex_entry == "ho=", "clitic", "prefix"))
+         word_type = if_else(str_detect(lex_entry, "\\=$"), "clitic", "prefix"))
 suffixes <- flex_lexicon2 |> 
   filter(lex_entry %in% prefix_and_suffix_dbase$lex_entry[prefix_and_suffix_dbase$morph_type == "suffix"]) |> 
   filter(lex_entry != "ha") |> 
@@ -296,7 +296,7 @@ suffixes <- flex_lexicon2 |>
          eno_word_gloss_en = morph_gloss_en,
          eno_word_gloss_id = morph_gloss_id,
          sources = "lexicon3",
-         word_type = "suffix")
+         word_type = if_else(str_detect(lex_entry, "^\\="), "clitic", "suffix"))
 
 wordsdb1 <- wordsdb |> 
   # bind_rows(additional_entry |> 
@@ -306,8 +306,50 @@ wordsdb1 <- wordsdb |>
   #                    eno_word_gloss_id = morph_gloss_id, 
   #                    sources = "lexicon2",
   #                    word_type = "root")) |> 
-  bind_rows(prefixes, suffixes)
-
+  mutate(exclude = if_else(str_detect(lex_entry, "\\=") & complex_word, TRUE, FALSE)) |> # exclude lex entry where it is clitic and the word is complex word
+  filter(!exclude) |> 
+  bind_rows(prefixes, suffixes) |> 
+  mutate(eno_word_pos = replace(eno_word_pos, eno_word_pos == "" & word == "yaham" & text_title == "Verbal Morphology 04", "n"),
+         eno_word_pos = replace(eno_word_pos, eno_word_pos == "" & word == "ubuh" & text_title == "30.Kelapa Kopra", "v"),
+         eno_word_pos = replace(eno_word_pos, eno_word_pos == "" & word == stri_trans_nfc("ẽp"), "Noun")) |> 
+  mutate(imperative = replace(imperative, is.na(imperative) & sources %in% c("lexicon", "lexicon3"), FALSE)) |> 
+  mutate(complex_word = replace(complex_word, is.na(complex_word) & sources %in% c("lexicon", "lexicon3"), FALSE),
+         is_variant = replace(is_variant, is.na(is_variant) & sources %in% c("lexicon", "lexicon3"), FALSE),
+         is_variant = replace(is_variant, is_variant & word_equal_lexentry, FALSE),
+         is_variant = replace(is_variant, word_type == "root" & !word_equal_lexentry & !is_variant, TRUE),
+         word_equal_lexentry = if_else(is.na(word_equal_lexentry) & word == lex_entry, TRUE, word_equal_lexentry)) |> 
+  
+  # change imperative structure into lower case word
+  mutate(word = if_else(imperative, str_to_lower(word), word)) |> 
+  
+  # handle the variant
+  mutate(id = if_else(is_variant & !word_equal_lexentry & root_word_id == "", eno_word_id, id),
+         root_word_id = if_else(is_variant & !word_equal_lexentry & root_word_id == "", entry_id_new, root_word_id)) |> 
+  
+  # handle the glossing of word that is equal with lex_entry but has different `eno_word_gloss_...` and `morph_gloss_...`
+  mutate(eno_word_gloss_id = if_else(word_equal_lexentry & eno_word_gloss_id != morph_gloss_id, morph_gloss_id, eno_word_gloss_id),
+         eno_word_gloss_en = if_else(word_equal_lexentry & eno_word_gloss_en != morph_gloss_en, morph_gloss_en, eno_word_gloss_en)) |> 
+  
+  mutate(across(matches("root_word_id|entry_id_new|eno_word_id"), ~replace_na(., ""))) |> 
+  
+  # handling the empty IDs for =a, =de, and a=
+  mutate(id = if_else(id == "" & word == "a=" & lex_entry == "a=" & morph_gloss_en %in% c("if", "when"), eno_word_id, id),
+         id = if_else(id == "" & word == "de" & lex_entry  %in% c("=de") & eno_word_gloss_id == "(milik)nya", eno_word_id, id),
+         id = if_else(id == "" & word == "a" & lex_entry  %in% c("=a"), eno_word_id, id),
+         root_word_id = if_else(root_word_id == "" & word == "a" & lex_entry  %in% c("=a", "=de"), entry_id_new, root_word_id)) |> 
+  
+  # handling Sentence case word
+  mutate(word = if_else(is_variant & eno_word_pos != "nprop",
+                        str_to_lower(word),
+                        word)) |> 
+  
+  # handling the variant relation
+  mutate(variant_relation = "",
+         variant_relation = if_else(is_variant,
+                                    str_c('"', word, '" adalah varian dari "', lex_entry, '"', sep = ""),
+                                    variant_relation))
+  
+  
 wordsdb2 <- wordsdb1 |> 
   select(id, 
          root_word_id, 
@@ -330,8 +372,10 @@ wordsdb2 <- wordsdb1 |>
          ex_eno_removed,
          ex_idn_removed,
          ex_eng_removed,
+         imperative,
          complex_word,
          is_variant,
+         variant_relation,
          word_equal_lexentry,
          morph_equal_lexentry,
          lexentry_equal_phrase) |> 
@@ -339,10 +383,10 @@ wordsdb2 <- wordsdb1 |>
 ##### keep only homonym ID for the word that is 'root'
 wordsdb3 <- wordsdb2 |> 
   mutate(homonym_id = replace(homonym_id,
-                              !word_type  %in%  c("root", "prefix", "suffix"),
+                              !word_type  %in%  c("root", "prefix", "suffix", "clitic"),
                               ""),
          homonym_id = replace(homonym_id,
-                              word_type  %in% c("root", "prefix", "suffix") &
+                              word_type  %in% c("root", "prefix", "suffix", "clitic") &
                                 homonym_id == "0",
                               ""),
          etym = replace(etym,
@@ -588,7 +632,7 @@ wordsdb4 <- wordsdb3 |>
 ##### keep sense order for the ROOT for now (based on sense order in LEXICON)
 wordsdb5 <- wordsdb4 |> 
   mutate(sense_order = replace(sense_order,
-                               !word_type %in% c("root", "prefix", "suffix"),
+                               !word_type %in% c("root", "prefix", "suffix", "clitic"),
                                ""),
          sense_order = replace(sense_order,
                                sense_order == "2",
@@ -748,7 +792,8 @@ to_show_pak_cok_team |>
 # BELOW IS THE CODE TO SAVE THE DATABASE TO GOOGLE SHEET TO SHARE TO PAK COK's TEAM
 # googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_new")
 # googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_20241230")
-googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_20250105")
+# googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_20250105")
+googlesheets4::write_sheet(data = to_show_pak_cok_team, ss = "1QHUeq-a1Nn_knlmT1J8cTneVoDExmV7wngqoAl6feVE", sheet = "to_show_pak_cok_team_20250122")
 
 
 root_id <- unique(to_show_pak_cok_team$word_id)
